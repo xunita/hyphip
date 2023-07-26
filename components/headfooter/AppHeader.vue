@@ -29,7 +29,7 @@
       </div>
       <div class="login-button">
         <button
-          class="b-login-button text-white flex space-x-2 items-center hover:bg-gray-900 rounded-full sm:px-6 px-3 py-3"
+          class="b-login-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full sm:px-6 px-3 py-3"
         >
           <svg
             class="sm:h-5 h-4 sm:w-5 w-4"

@@ -14,7 +14,7 @@
 
       <div class="file-load-button">
         <button
-          class="b-file-load-button text-white flex space-x-2 items-center hover:bg-gray-900 rounded-full px-4 py-1.5"
+          class="b-file-load-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
         >
           <svg
             class="h-8 w-8"
