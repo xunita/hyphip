@@ -1,0 +1,62 @@
+body {
+  background-color: #000205 ;
+}
+.bg-main {
+  background-color: #000205;
+}
+/*  */
+.h-128 {
+  height: 128px;
+}
+
+.h-256 {
+  height: 256px;
+}
+
+.h-512 {
+  height: 512px;
+}
+
+.h-720 {
+  height: 720px;
+}
+/*  */
+.w-h-128 {
+  width: 128px;
+  height: 128px;
+}
+
+.w-h-256 {
+  width: 256px;
+  height: 256px;
+}
+
+.w-h-512 {
+  width: 512px;
+  height: 512px;
+}
+
+.w-h-720 {
+  width: 720px;
+  height: 720px;
+}
+/*  */
+.w-128 {
+  width: 128px;
+}
+
+.w-256 {
+  width: 256px;
+}
+
+.w-512 {
+  width: 512px;
+}
+
+.w-720 {
+  width: 720px;
+}
+
+.color-login {
+  color: #66cccc;
+}
