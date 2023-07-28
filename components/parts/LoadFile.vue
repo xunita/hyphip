@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
-import { onBeforeRouteLeave } from "vue-router";
+// import { onBeforeRouteLeave } from "vue-router";
 
 function readFile(f) {
   const reader = new FileReader();
@@ -160,19 +160,22 @@ function quitMessage() {
 const events = ["dragenter", "dragover", "dragleave", "drop", "drag"];
 
 onMounted(() => {
+  window.onbeforeunload = function (event) {
+    return confirm("Confirm refresh");
+  };
   events.forEach((eventName) => {
     document.body.addEventListener(eventName, preventDefaults);
   });
 });
 
-onBeforeRouteLeave((to, from) => {
-  console.log("on leave");
-  const answer = window.confirm(
-    "Are you sure you want to leave ? Your file will be lost!"
-  );
-  // cancel the navigation and stay on the same page
-  if (!answer) return false;
-});
+// onBeforeRouteLeave((to, from) => {
+//   console.log("on leave");
+//   const answer = window.confirm(
+//     "Are you sure you want to leave ? Your file will be lost!"
+//   );
+//   // cancel the navigation and stay on the same page
+//   if (!answer) return false;
+// });
 
 onUnmounted(() => {
   events.forEach((eventName) => {
