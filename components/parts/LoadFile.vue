@@ -196,7 +196,9 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
     <div class="relative text-white">
       <div
         @drop.prevent="onDrop"
-        @dragleave="disableDragDiv"
+        @dragleave.prevent="disableDragDiv"
+        @dragenter.prevent="enableDragDiv"
+        @dragover.prevent="enableDragDiv"
         v-show="enable_filedrop_area"
         class="absolute flex flex-col justify-center rounded-lg w-full h-full absolute bg-slate-700"
       >
@@ -224,8 +226,8 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
         </div>
       </div>
       <div
-        @dragenter="enableDragDiv"
-        @dragover="enableDragDiv"
+        @dragenter.prevent="enableDragDiv"
+        @dragover.prevent="enableDragDiv"
         class="load-file-div border border-gray-800 rounded-lg lg:px-20 md:px-16 px-8 py-6 flex flex-col justify-items-center items-center space-y-3.5"
       >
         <h1 class="font-bold text-2xl">Link your file</h1>
@@ -237,7 +239,7 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
 
         <span
           v-show="enable_filename"
-          class="inline text-center  break-words text-md font-bold text-ellipsis"
+          class="inline text-center break-words text-md font-bold text-ellipsis"
         >
           {{ filename }}
         </span>
