@@ -1,5 +1,5 @@
 <template>
-  <div class="border-b border-gray-900">
+  <div class="border-b border-gray-800">
     <nav class="py-2 sm:px-16 px-6 flex justify-between items-center">
       <div class="logo">
         <NuxtLink to="/" alt="Hyphip logo"
