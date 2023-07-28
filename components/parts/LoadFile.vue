@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
-// import { onBeforeRouteLeave } from "vue-router";
+import { onMounted, onUnmounted, watch } from "vue";
+import { onBeforeRouteLeave } from "vue-router";
 
 function readFile(f) {
   const reader = new FileReader();
@@ -8,6 +8,7 @@ function readFile(f) {
     reader.readAsArrayBuffer(f[0]);
     reader.onload = function (event) {
       file_loading_or_saving.value = false;
+      setFileToLoad();
       setFileString(f[0].name);
       setFileName();
       unsetSpanDrop();
@@ -37,6 +38,7 @@ function readFileDrop(f) {
     reader.onload = function (event) {
       file_loading_or_saving.value = false;
       enable_filedrop_area.value = false;
+      setFileToLoad();
       setFileString(f[0].name);
       setFileName();
       unsetSpanDrop();
@@ -72,6 +74,7 @@ function setFileString(name: string) {
 
 function reset() {
   setFileString("unknown.unknown");
+  unsetFileToLoad();
   unsetFileName();
   setSpanDrop();
   setLoadButton();
@@ -113,6 +116,13 @@ function unsetSaveButton() {
   enable_savebutton.value = false;
 }
 
+function setFileToLoad() {
+  file_to_load.value = true;
+}
+function unsetFileToLoad() {
+  file_to_load.value = false;
+}
+
 function setSpanDrop() {
   enable_filedrop_span.value = true;
 }
@@ -121,6 +131,7 @@ function unsetSpanDrop() {
 }
 
 function onChange(e) {
+  unsetFileToLoad();
   setLoadSave();
   unsetHasError();
   file.value = "";
@@ -130,6 +141,7 @@ function onChange(e) {
 }
 
 function onDrop(e) {
+  unsetFileToLoad();
   setLoadSave();
   unsetHasError();
   file.value = "";
@@ -148,21 +160,44 @@ function preventDefaults(e) {
   e.preventDefault();
 }
 
-function checkFileIn() {
-  if (file.value != null) return true;
-  return false;
-}
+const checkFileIn = useState("checkFileIn", () =>
+  file.value != null ? true : false
+);
 
 function quitMessage() {
-  if (checkFileIn()) return confirm("Are you sure ? Your file will be lost.");
+  if (checkFileIn.value)
+    return confirm("Are you sure ? Your file will be lost.");
 }
 
 const events = ["dragenter", "dragover", "dragleave", "drop", "drag"];
 
+function beforeUnloadListener() {
+  const answer = window.confirm(
+    "Are you sure you want to leave ? Your file will be lost!"
+  );
+  // cancel the navigation and stay on the same page
+  if (!answer) return false;
+}
+const file_to_load = useState("file_to_load", () => false);
+
+// onBeforeRouteLeave(() => {
+//   beforeUnloadListener();
+// });
+
 onMounted(() => {
-  window.onbeforeunload = function (event) {
-    return confirm("Confirm refresh");
-  };
+  watch(
+    file_to_load,
+    async (newCheck, oldCheck) => {
+      if (newCheck) {
+        window.onbeforeunload = function () {
+          if (newCheck == true) return "handle your events or msgs here";
+        };
+      } else {
+        window.onbeforeunload = function () {};
+      }
+    },
+    { immediate: true }
+  );
   events.forEach((eventName) => {
     document.body.addEventListener(eventName, preventDefaults);
   });
