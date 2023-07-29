@@ -171,7 +171,6 @@ function enableDragDiv() {
   if (!enable_filedrop_area.value) {
     if (!enable_filename.value) enable_filedrop_area.value = true;
   }
-  }
 }
 
 function preventDefaults(e) {
