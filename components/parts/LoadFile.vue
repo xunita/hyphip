@@ -14,6 +14,7 @@ function readFile(f) {
       unsetSpanDrop();
       unsetLoadButton();
       setSaveButton();
+      unsetHasError();
     };
     reader.onprogress = function (event) {
       file_loading_or_saving.value = true;
@@ -44,6 +45,7 @@ function readFileDrop(f) {
       unsetSpanDrop();
       unsetLoadButton();
       setSaveButton();
+      unsetHasError();
     };
     reader.onprogress = function (event) {
       file_loading_or_saving.value = true;
@@ -79,6 +81,7 @@ function reset() {
   setSpanDrop();
   setLoadButton();
   unsetSaveButton();
+  unsetHasError();
 }
 
 function setHasError() {
