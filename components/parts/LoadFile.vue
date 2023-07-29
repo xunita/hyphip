@@ -134,6 +134,13 @@ function unsetSpanDrop() {
   enable_filedrop_span.value = false;
 }
 
+function setDropArea() {
+  enable_filedrop_area.value = true;
+}
+function unsetDropArea() {
+  enable_filedrop_area.value = false;
+}
+
 function onChange(e) {
   unsetFileToLoad();
   setLoadSave();
@@ -161,7 +168,10 @@ function disableDragDiv() {
   enable_filedrop_area.value = false;
 }
 function enableDragDiv() {
-  if (!enable_filedrop_area.value) enable_filedrop_area.value = true;
+  if (!enable_filedrop_area.value) {
+    if (!enable_filename.value) enable_filedrop_area.value = true;
+  }
+  }
 }
 
 function preventDefaults(e) {
