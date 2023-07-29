@@ -64,6 +64,7 @@ function readFileDrop(f) {
 }
 
 const file = useState("file", () => "");
+const oldfile = useState("oldfile", () => "");
 // const fileToSave = useState("fileToSave", () => "");
 function getFile() {
   const fu = document.getElementById("file-upload");
@@ -137,9 +138,13 @@ function onChange(e) {
   unsetFileToLoad();
   setLoadSave();
   unsetHasError();
+  oldfile.value = file.value;
   file.value = "";
   file.value = e.target.files || e.dataTransfer.files;
-  readFile(file.value);
+  if(file.value.length !== 0) readFile(file.value);
+  else {
+    file.value = oldfile.value;
+  }
   unsetLoadSave();
 }
 
