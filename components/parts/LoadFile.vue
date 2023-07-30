@@ -2,6 +2,22 @@
 import { onMounted, onUnmounted, watch } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 
+function resetProgress() {
+  progressCurrent.value = 0;
+  progressTotal.value = 0;
+}
+
+function updateProgress(event) {
+  resetProgress();
+  if (event.lengthComputable) {
+    progressCurrent.value = event.loaded; // Bytes loaded so far
+    progressTotal.value = event.total; // Total bytes of the file
+
+    // Calculate the progress percentage
+    progressLevel.value = (progressCurrent.value / progressTotal.value) * 100;
+  }
+}
+
 function readFile(f) {
   const reader = new FileReader();
   try {
@@ -17,6 +33,7 @@ function readFile(f) {
     };
     reader.onprogress = function (event) {
       file_loading_or_saving.value = true;
+      updateProgress(event);
     };
 
     reader.onerror = function (event) {
@@ -47,6 +64,7 @@ function readFileDrop(f) {
     };
     reader.onprogress = function (event) {
       file_loading_or_saving.value = true;
+      updateProgress(event);
     };
 
     reader.onerror = function (event) {
@@ -79,6 +97,19 @@ function reset() {
   setSpanDrop();
   setLoadButton();
   unsetSaveButton();
+}
+
+function goUpProgress() {
+  if (progressLevel.value == 100) progressLevel.value = 0;
+  progressLevel.value++;
+}
+
+function setProgressLeveltry() {
+  setInterval(goUpProgress, 50);
+}
+
+function setProgressLevel(value) {
+  progressLevel.value = value;
 }
 
 function setHasError() {
@@ -185,6 +216,7 @@ const file_to_load = useState("file_to_load", () => false);
 // });
 
 onMounted(() => {
+  // setProgressLeveltry();
   watch(
     file_to_load,
     async (newCheck, oldCheck) => {
@@ -219,6 +251,10 @@ onUnmounted(() => {
 });
 const filename = useState("filename", () => "unknown.unknown");
 
+const progressCurrent = useState("progressCurrent", () => 0);
+const progressTotal = useState("progressTotal", () => 0);
+const progressLevel = useState("progressLevel", () => 0);
+
 const enable_filename = useState("enable_filename", () => false);
 const enable_error = useState("enable_error", () => false);
 const enable_extension_error = useState("enable_extension_error", () => false);
@@ -249,27 +285,25 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
       >
         <span class="text-2xl text-center font-semibold">Drop your file</span>
       </div>
+
       <div v-show="file_loading_or_saving">
         <div
           class="absolute opacity-50 rounded-lg lg:px-20 md:px-16 px-8 -py-6 w-full h-full absolute bg-slate-700"
         ></div>
         <div
-          class="absolute w-full h-full flex flex-col justify-center items-center"
+          class="absolute w-full bg-gray-200 rounded-t-full h-1 mb-4 dark:bg-gray-700"
         >
-          <svg
-            class="animate-spin h-28 w-28 mr-3 text-white"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fill="#fff"
-              d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z"
-            />
-          </svg>
+          <div
+            :class="{
+              'rounded-tl-lg': progressLevel < 100,
+              'rounded-t-lg': progressLevel == 100,
+            }"
+            class="progress-bar-color h-1 dark:bg-blue-500 smooth-width-increase"
+            :style="{ width: `${progressLevel}%` }"
+          ></div>
         </div>
       </div>
+
       <div
         @dragenter.prevent="enableDragDiv"
         @dragover.prevent="enableDragDiv"
@@ -343,7 +377,7 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
         <div v-show="enable_savebutton" class="file-reset-button">
           <button
             @click="reset"
-            class="b-file-reset-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
+            class="b-file-reset-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-6 py-1.5"
           >
             <span class="inline sm:text-sm text-xs font-semibold break-words"
               >Reset</span

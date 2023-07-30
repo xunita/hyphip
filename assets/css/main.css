@@ -53,8 +53,16 @@ body {
   width: 512px;
 }
 
+.smooth-width-increase {
+  transition: width 0.2s ease; /* Add the transition property for width */
+}
+
 .w-720 {
   width: 720px;
+}
+
+.progress-bar-color {
+  background-color: #66cccc;
 }
 
 .color-login {
