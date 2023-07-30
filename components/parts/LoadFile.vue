@@ -30,6 +30,7 @@ function readFile(f) {
       unsetSpanDrop();
       unsetLoadButton();
       setSaveButton();
+      unsetHasError();
     };
     reader.onprogress = function (event) {
       file_loading_or_saving.value = true;
@@ -61,6 +62,7 @@ function readFileDrop(f) {
       unsetSpanDrop();
       unsetLoadButton();
       setSaveButton();
+      unsetHasError();
     };
     reader.onprogress = function (event) {
       file_loading_or_saving.value = true;
@@ -80,6 +82,7 @@ function readFileDrop(f) {
 }
 
 const file = useState("file", () => "");
+const oldfile = useState("oldfile", () => "");
 // const fileToSave = useState("fileToSave", () => "");
 function getFile() {
   const fu = document.getElementById("file-upload");
@@ -97,6 +100,7 @@ function reset() {
   setSpanDrop();
   setLoadButton();
   unsetSaveButton();
+  unsetHasError();
 }
 
 function goUpProgress() {
@@ -161,13 +165,24 @@ function unsetSpanDrop() {
   enable_filedrop_span.value = false;
 }
 
+function setDropArea() {
+  enable_filedrop_area.value = true;
+}
+function unsetDropArea() {
+  enable_filedrop_area.value = false;
+}
+
 function onChange(e) {
   unsetFileToLoad();
   setLoadSave();
   unsetHasError();
+  oldfile.value = file.value;
   file.value = "";
   file.value = e.target.files || e.dataTransfer.files;
-  readFile(file.value);
+  if(file.value.length !== 0) readFile(file.value);
+  else {
+    file.value = oldfile.value;
+  }
   unsetLoadSave();
 }
 
@@ -184,7 +199,9 @@ function disableDragDiv() {
   enable_filedrop_area.value = false;
 }
 function enableDragDiv() {
-  if (!enable_filedrop_area.value) enable_filedrop_area.value = true;
+  if (!enable_filedrop_area.value) {
+    if (!enable_filename.value) enable_filedrop_area.value = true;
+  }
 }
 
 function preventDefaults(e) {
