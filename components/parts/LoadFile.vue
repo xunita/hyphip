@@ -7,6 +7,10 @@ function resetProgress() {
   progressTotal.value = 0;
 }
 
+function setProgress100() {
+  progressLevel.value = 100;
+}
+
 function updateProgress(event) {
   resetProgress();
   if (event.lengthComputable) {
@@ -23,14 +27,19 @@ function readFile(f) {
   try {
     reader.readAsArrayBuffer(f[0]);
     reader.onload = function (event) {
-      file_loading_or_saving.value = false;
-      setFileToLoad();
-      setFileString(f[0].name);
-      setFileName();
-      unsetSpanDrop();
-      unsetLoadButton();
-      setSaveButton();
-      unsetHasError();
+      setProgress100();
+
+      setTimeout(() => {
+        file_loading_or_saving.value = false;
+        setFileToLoad();
+        setFileString(f[0].name);
+        setFileName();
+        unsetSpanDrop();
+        unsetLoadButton();
+        setSaveButton();
+        unsetHasError();
+        resetProgress();
+      }, 250);
     };
     reader.onprogress = function (event) {
       file_loading_or_saving.value = true;
@@ -54,15 +63,19 @@ function readFileDrop(f) {
   try {
     reader.readAsArrayBuffer(f[0]);
     reader.onload = function (event) {
-      file_loading_or_saving.value = false;
-      enable_filedrop_area.value = false;
-      setFileToLoad();
-      setFileString(f[0].name);
-      setFileName();
-      unsetSpanDrop();
-      unsetLoadButton();
-      setSaveButton();
-      unsetHasError();
+      setProgress100();
+      setTimeout(() => {
+        file_loading_or_saving.value = false;
+        enable_filedrop_area.value = false;
+        setFileToLoad();
+        setFileString(f[0].name);
+        setFileName();
+        unsetSpanDrop();
+        unsetLoadButton();
+        setSaveButton();
+        unsetHasError();
+        resetProgress();
+      }, 250);
     };
     reader.onprogress = function (event) {
       file_loading_or_saving.value = true;
@@ -94,6 +107,7 @@ function setFileString(name: string) {
 }
 
 function reset() {
+  file.value = "";
   setFileString("unknown.unknown");
   unsetFileToLoad();
   unsetFileName();
@@ -179,7 +193,7 @@ function onChange(e) {
   oldfile.value = file.value;
   file.value = "";
   file.value = e.target.files || e.dataTransfer.files;
-  if(file.value.length !== 0) readFile(file.value);
+  if (file.value.length !== 0) readFile(file.value);
   else {
     file.value = oldfile.value;
   }
