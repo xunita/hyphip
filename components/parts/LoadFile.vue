@@ -2,6 +2,272 @@
 import { onMounted, onUnmounted, watch } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 
+function upload_file(file, metadata, link_metadata) {
+  try {
+    unsetHasError();
+    const storage = nuxtApp.$firestorage;
+    const fileRef = nuxtApp.$fireref(
+      storage,
+      link_metadata.filetype + link_metadata.filename
+    );
+
+    // Upload the file and metadata
+    const uploadTask = nuxtApp.$uploadBytesResumable(fileRef, file, {
+      metadata,
+    });
+
+    // Register three observers:
+    // 1. 'state_changed' observer, called any time the state changes
+    // 2. Error observer, called on failure
+    // 3. Completion observer, called on successful completion
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        progressLevel.value =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        switch (snapshot.state) {
+          case "paused":
+            console.log("Upload is paused");
+            break;
+          case "running":
+            console.log("Upload is running");
+            break;
+        }
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+        unsetLoadSave();
+        setHasError();
+      },
+      () => {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        nuxtApp.$getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          // Create our initial doc
+          try {
+            const db = nuxtApp.$firestore;
+            const doc = nuxtApp.$fireDoc;
+            const setDoc = nuxtApp.$fireSetDoc;
+
+            setDoc(doc(db, "links", link_metadata.filetoken), {
+              created_at: Date.now().toString(),
+              filelocation: downloadURL,
+              filename: link_metadata.filename,
+              filesize: link_metadata.filesize,
+              filetoken: link_metadata.filetoken,
+              filetype: link_metadata.filetype,
+              link: link_metadata.link,
+              file_metadata: metadata,
+            })
+              .then(() => {
+                setProgressLevel(100);
+                setTimeout(() => {
+                  unsetLoadSave();
+                  resetProgress();
+
+                  reset();
+                }, 250);
+              })
+              .catch((error) => {
+                unsetLoadSave();
+                setHasError();
+              });
+          } catch (error) {
+            unsetLoadSave();
+            setHasError();
+          }
+        });
+      }
+    );
+  } catch (error) {
+    unsetLoadSave();
+    setHasError();
+  }
+}
+
+function generateRandomToken(length) {
+  const characters =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let token = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    token += characters.charAt(randomIndex);
+  }
+  return token;
+}
+
+function generateFunLinkWithToken(fileName) {
+  const adjectives = [
+    "happy",
+    "playful",
+    "awesome",
+    "funky",
+    "crazy",
+    "silly",
+    "quirky",
+    "fantastic",
+    "wonderful",
+    "epic",
+    "magical",
+  ];
+  const randomAdjective =
+    adjectives[Math.floor(Math.random() * adjectives.length)];
+
+  // Remove spaces and special characters from the file name and convert to lowercase
+  const cleanedFileName = fileName.replace(/[^\w\s]/gi, "").toLowerCase();
+
+  // Replace spaces with underscores in the cleaned file name
+  const linkName = randomAdjective + "-" + cleanedFileName.replace(/\s+/g, "_");
+
+  // Add a random unique token to the link name
+  const tokenLength = fileName.length; // Adjust the length of the token as desired
+  const randomToken = generateRandomToken(tokenLength);
+
+  const funLinkWithToken = linkName + "-" + randomToken;
+
+  return funLinkWithToken;
+}
+
+function generateUniqueToken() {
+  const timestamp = Date.now().toString(36); // Convert the current timestamp to base36
+  const randomString = Math.random().toString(36).substring(2, 8); // Generate a random string
+  const token = timestamp + "-" + randomString;
+
+  // Generate a hash from the token to make it even more unique
+  const hash = btoa(token).replace(/=/g, "").substring(0, 32); // Base64 encoding and trimming
+
+  return hash;
+}
+
+function generateRandomLinkName() {
+  const characters =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const length = 8; // Length of the random link name
+  let randomLinkName = "";
+
+  // Generate random characters for the link name
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomLinkName += characters.charAt(randomIndex);
+  }
+
+  // Add the current timestamp to make it more unique
+  const timestamp = Date.now().toString(36); // Convert the current timestamp to base36
+  randomLinkName += "-" + timestamp;
+
+  return randomLinkName;
+}
+
+function generateFunLinkName(fileName) {
+  const adjectives = [
+    "happy",
+    "playful",
+    "awesome",
+    "funky",
+    "crazy",
+    "silly",
+    "quirky",
+    "fantastic",
+    "wonderful",
+    "epic",
+    "magical",
+  ];
+  const randomAdjective =
+    adjectives[Math.floor(Math.random() * adjectives.length)];
+
+  // Remove spaces and special characters from the file name and convert to lowercase
+  const cleanedFileName = fileName.replace(/[^\w\s]/gi, "").toLowerCase();
+
+  // Combine the adjective and cleaned file name
+  const funLinkName = randomAdjective + "-" + cleanedFileName;
+
+  return funLinkName;
+}
+
+const nuxtApp = useNuxtApp();
+
+function savefile() {
+  setLoadSave();
+  unsetHasError();
+  unsetExtensionHasError();
+  try {
+    if (file_to_load.value) {
+      if (file.value.length !== 0) {
+        if (isExtensionAllowed(file.value[0])) {
+          const to_upload = file.value[0];
+          const filename = to_upload.name;
+          const filesize = to_upload.size.toString();
+          const filetoken = generateUniqueToken();
+          const filetype = getFileType(to_upload.name);
+          const link = generateFunLinkWithToken(to_upload.name);
+
+          const metadata = {
+            type: to_upload.type,
+            size: filesize,
+            name: filename,
+            lastmodified: to_upload.lastModified,
+          };
+
+          const link_metadata = {
+            filename: filename,
+            filesize: filesize,
+            filetoken: filetoken,
+            filetype: filetype,
+            link: link,
+          };
+
+          // prepare to save
+          upload_file(to_upload, metadata, link_metadata);
+        } else {
+          reset();
+          setTimeout(() => {
+            setExtensionHasError();
+          }, 250);
+        }
+      } else {
+        reset();
+        setTimeout(() => {
+          setHasError();
+        }, 250);
+      }
+    } else {
+      reset();
+      setTimeout(() => {
+        setHasError();
+      }, 250);
+    }
+  } catch (error) {
+    setHasError();
+    unsetLoadSave();
+  }
+}
+
+function getFileType(fileName) {
+  const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "svg"];
+  const videoExtensions = ["mp4", "avi", "wmv", "mov"];
+  const pdfExtension = "pdf";
+
+  const fileExtension = fileName.split(".").pop().toLowerCase();
+
+  if (imageExtensions.includes(fileExtension)) {
+    return "images/";
+  } else if (videoExtensions.includes(fileExtension)) {
+    return "videos/";
+  } else if (fileExtension === pdfExtension) {
+    return "pdfs/";
+  } else {
+    return "unknown";
+  }
+}
+
+function isExtensionAllowed(theFile) {
+  const allowedExtensions =
+    /\.(jpg|jpeg|png|gif|bmp|svg|mp4|avi|wmv|mov|pdf)$/i;
+  return allowedExtensions.test(theFile.name);
+}
+
 function resetProgress() {
   progressCurrent.value = 0;
   progressTotal.value = 0;
@@ -23,6 +289,7 @@ function updateProgress(event) {
 }
 
 function readFile(f) {
+  unsetDropArea();
   const reader = new FileReader();
   try {
     reader.readAsArrayBuffer(f[0]);
@@ -30,7 +297,7 @@ function readFile(f) {
       setProgress100();
 
       setTimeout(() => {
-        file_loading_or_saving.value = false;
+        unsetLoadSave();
         setFileToLoad();
         setFileString(f[0].name);
         setFileName();
@@ -40,33 +307,38 @@ function readFile(f) {
         unsetHasError();
         resetProgress();
       }, 250);
+      // console.log(file.value[0]);
+      // console.log(getFileType(file.value[0].name));
+      // console.log(generateFunLinkWithToken(file.value[0].name));
     };
     reader.onprogress = function (event) {
-      file_loading_or_saving.value = true;
+      setLoadSave();
       updateProgress(event);
     };
 
     reader.onerror = function (event) {
+      resetProgress();
       setHasError();
-      file_loading_or_saving.value = false;
+      unsetLoadSave();
     };
   } catch (error) {
-    enable_filedrop_area.value = false;
+    unsetDropArea();
     setHasError();
-    file_loading_or_saving.value = false;
+    unsetLoadSave();
+    resetProgress();
   }
 }
 
 function readFileDrop(f) {
-  enable_filedrop_area.value = false;
+  unsetDropArea();
   const reader = new FileReader();
   try {
     reader.readAsArrayBuffer(f[0]);
     reader.onload = function (event) {
       setProgress100();
       setTimeout(() => {
-        file_loading_or_saving.value = false;
-        enable_filedrop_area.value = false;
+        unsetLoadSave();
+        unsetDropArea();
         setFileToLoad();
         setFileString(f[0].name);
         setFileName();
@@ -76,21 +348,24 @@ function readFileDrop(f) {
         unsetHasError();
         resetProgress();
       }, 250);
+      console.log(file.value[0]);
     };
     reader.onprogress = function (event) {
-      file_loading_or_saving.value = true;
+      setLoadSave();
       updateProgress(event);
     };
 
     reader.onerror = function (event) {
-      enable_filedrop_area.value = false;
+      resetProgress();
+      unsetDropArea();
       setHasError();
-      file_loading_or_saving.value = false;
+      unsetLoadSave();
     };
   } catch (error) {
-    enable_filedrop_area.value = false;
+    resetProgress();
+    unsetDropArea();
     setHasError();
-    file_loading_or_saving.value = false;
+    unsetLoadSave();
   }
 }
 
@@ -135,6 +410,13 @@ function setHasError() {
 }
 function unsetHasError() {
   enable_error.value = false;
+}
+
+function setExtensionHasError() {
+  enable_extension_error.value = true;
+}
+function unsetExtensionHasError() {
+  enable_extension_error.value = false;
 }
 
 function setLoadSave() {
@@ -190,11 +472,17 @@ function onChange(e) {
   unsetFileToLoad();
   setLoadSave();
   unsetHasError();
+  unsetExtensionHasError();
   oldfile.value = file.value;
   file.value = "";
   file.value = e.target.files || e.dataTransfer.files;
-  if (file.value.length !== 0) readFile(file.value);
-  else {
+  if (file.value.length !== 0) {
+    if (isExtensionAllowed(file.value[0])) {
+      readFile(file.value);
+    } else {
+      setExtensionHasError();
+    }
+  } else {
     file.value = oldfile.value;
   }
   unsetLoadSave();
@@ -204,9 +492,14 @@ function onDrop(e) {
   unsetFileToLoad();
   setLoadSave();
   unsetHasError();
+  unsetExtensionHasError();
   file.value = "";
   file.value = e.target.files || e.dataTransfer.files;
-  readFileDrop(file.value);
+  if (isExtensionAllowed(file.value[0])) {
+    readFileDrop(file.value);
+  } else {
+    setExtensionHasError();
+  }
   unsetLoadSave();
 }
 function disableDragDiv() {
@@ -247,7 +540,6 @@ const file_to_load = useState("file_to_load", () => false);
 // });
 
 onMounted(() => {
-  // setProgressLeveltry();
   watch(
     file_to_load,
     async (newCheck, oldCheck) => {
@@ -383,6 +675,7 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
 
         <div v-show="enable_savebutton" class="file-save-button">
           <button
+            @click="savefile"
             class="b-file-save-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
           >
             <svg

@@ -2,7 +2,7 @@
   <div class="border-b border-gray-800">
     <nav class="py-2 sm:px-16 px-6 flex justify-between items-center">
       <div class="logo">
-        <NuxtLink to="/" alt="Hyphip logo"
+        <NuxtLink to="/" alt="Hyphip logo" class="flex items-center space-x-1"
           ><svg
             class="p-1"
             width="128"
@@ -25,6 +25,9 @@
               />
             </g>
           </svg>
+          <span class="text-white font-semibold text-xs"
+            >(Demo with img, video & pdf)</span
+          >
         </NuxtLink>
       </div>
       <div class="login-button">
@@ -46,7 +49,9 @@
               stroke-linejoin="round"
             ></path>
           </svg>
-          <span class="inline sm:text-sm text-xs font-semibold break-words">Sign In</span>
+          <span class="inline sm:text-sm text-xs font-semibold break-words"
+            >Sign In</span
+          >
         </button>
       </div>
     </nav>

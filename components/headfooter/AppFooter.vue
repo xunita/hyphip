@@ -19,7 +19,7 @@ const year = useState("year", () => new Date().getFullYear().toString());
         </NuxtLink>
         © {{ year }}
       </span>
-      <NuxtLink to="/terms" class="hover:underline"> Terms of use </NuxtLink>
+      <!-- <NuxtLink to="/#" class="hover:underline"> Terms of use </NuxtLink> -->
     </div>
   </div>
 </template>
