@@ -32,6 +32,7 @@ function upload_file(file, metadata, link_metadata) {
             console.log("Upload is paused");
             break;
           case "running":
+            setLoadSave();
             console.log("Upload is running");
             break;
         }
@@ -189,7 +190,6 @@ function generateFunLinkName(fileName) {
 const nuxtApp = useNuxtApp();
 
 function savefile() {
-  setLoadSave();
   unsetHasError();
   unsetExtensionHasError();
   try {
@@ -240,7 +240,6 @@ function savefile() {
     }
   } catch (error) {
     setHasError();
-    unsetLoadSave();
   }
 }
 
