@@ -5,10 +5,11 @@ import { onBeforeRouteLeave } from "vue-router";
 function upload_file(file, metadata, link_metadata) {
   try {
     unsetHasError();
+    const uniqueFileName = `${Date.now()}_${file.name}`;
     const storage = nuxtApp.$firestorage;
     const fileRef = nuxtApp.$fireref(
       storage,
-      link_metadata.filetype + link_metadata.filename
+      link_metadata.filetype + uniqueFileName
     );
 
     // Upload the file and metadata
@@ -224,19 +225,19 @@ function savefile() {
           reset();
           setTimeout(() => {
             setExtensionHasError();
-          }, 250);
+          }, 50);
         }
       } else {
         reset();
         setTimeout(() => {
           setHasError();
-        }, 250);
+        }, 50);
       }
     } else {
       reset();
       setTimeout(() => {
         setHasError();
-      }, 250);
+      }, 50);
     }
   } catch (error) {
     setHasError();
