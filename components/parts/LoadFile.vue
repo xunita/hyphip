@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
-
+const router = useRouter();
 function upload_file(file, metadata, link_metadata) {
   try {
     unsetHasError();
@@ -71,6 +71,7 @@ function upload_file(file, metadata, link_metadata) {
 
                   reset();
                 }, 250);
+                router.push({ path: "/" + link_metadata.link });
               })
               .catch((error) => {
                 unsetLoadSave();
@@ -117,14 +118,11 @@ function generateFunLinkWithToken(fileName) {
   const randomAdjective =
     adjectives[Math.floor(Math.random() * adjectives.length)];
 
-  // Remove spaces and special characters from the file name and convert to lowercase
-  const cleanedFileName = fileName.replace(/[^\w\s]/gi, "").toLowerCase();
-
   // Replace spaces with underscores in the cleaned file name
-  const linkName = randomAdjective + "-" + cleanedFileName.replace(/\s+/g, "_");
+  const linkName = randomAdjective;
 
   // Add a random unique token to the link name
-  const tokenLength = fileName.length; // Adjust the length of the token as desired
+  const tokenLength = Math.min(128, fileName.length); // Adjust the length of the token as desired
   const randomToken = generateRandomToken(tokenLength);
 
   const funLinkWithToken = linkName + "-" + randomToken;
