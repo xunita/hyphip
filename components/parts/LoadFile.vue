@@ -358,7 +358,6 @@ function readFileDrop(f) {
         unsetHasError();
         resetProgress();
       }, 250);
-      console.log(file.value[0]);
     };
     reader.onprogress = function (event) {
       setLoadSave();
