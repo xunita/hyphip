@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, watch } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 const router = useRouter();
+const route = useRoute();
 function upload_file(file, metadata, link_metadata) {
   try {
     unsetHasError();
@@ -68,10 +69,13 @@ function upload_file(file, metadata, link_metadata) {
                 setTimeout(() => {
                   unsetLoadSave();
                   resetProgress();
-
-                  reset();
-                }, 250);
-                router.push({ path: "/" + link_metadata.link });
+                }, 150);
+                // return navigateTo("/search");
+                unsetFileToLoad();
+                const url = "/" + link_metadata.filetype + link_metadata.link;
+                setTimeout(() => {
+                  window.location.assign(url);
+                }, 0);
               })
               .catch((error) => {
                 unsetLoadSave();
@@ -187,6 +191,14 @@ function generateFunLinkName(fileName) {
 }
 
 const nuxtApp = useNuxtApp();
+
+function getFileExtension(fileName) {
+  const lastDotIndex = fileName.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return ""; // File name has no extension
+  }
+  return fileName.slice(lastDotIndex + 1).toLowerCase();
+}
 
 function savefile() {
   unsetHasError();
@@ -522,7 +534,14 @@ function quitMessage() {
     return confirm("Are you sure ? Your file will be lost.");
 }
 
-const events = ["dragenter", "dragover", "dragleave", "drop", "drag"];
+const events = [
+  "dragenter",
+  "onbeforeunload",
+  "dragover",
+  "dragleave",
+  "drop",
+  "drag",
+];
 
 function beforeUnloadListener() {
   const answer = window.confirm(
@@ -538,19 +557,18 @@ const file_to_load = useState("file_to_load", () => false);
 // });
 
 onMounted(() => {
-  watch(
-    file_to_load,
-    async (newCheck, oldCheck) => {
-      if (newCheck) {
-        window.onbeforeunload = function () {
-          if (newCheck == true) return "handle your events or msgs here";
-        };
-      } else {
-        window.onbeforeunload = function () {};
-      }
-    },
-    { immediate: true }
-  );
+  watch(file_to_load, async (newCheck, oldCheck) => {
+    if (newCheck) {
+      window.onbeforeunload = function () {
+        if (newCheck == true) return "handle your events or msgs here";
+        else {
+          window.onbeforeunload = function () {};
+        }
+      };
+    } else {
+      window.onbeforeunload = function () {};
+    }
+  });
   events.forEach((eventName) => {
     document.body.addEventListener(eventName, preventDefaults);
   });
