@@ -1,10 +1,12 @@
 <script setup lang="ts">
 const route = useRoute();
-onMounted(() => {
-  console.log(route.params);
-});
+onMounted(() => {});
 onUnmounted(() => {
   window.onbeforeunload = function () {};
+});
+useHead({
+  title: "File preview - Hyphip",
+  meta: [{ name: "description", content: "Preview a file" }],
 });
 </script>
 <template>

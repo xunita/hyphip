@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useHead({
-  title: "Hyphip - Home",
+  title: "Home - Hyphip",
   meta: [{ name: "description", content: "Hyphip" }],
 });
 </script>
