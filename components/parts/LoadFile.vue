@@ -69,7 +69,7 @@ function upload_file(file, metadata, link_metadata) {
                 setTimeout(() => {
                   unsetLoadSave();
                   resetProgress();
-                }, 350);
+                }, 500);
                 // return navigateTo("/search");
                 unsetFileToLoad();
                 const url = "/" + link_metadata.filetype + link_metadata.link;
