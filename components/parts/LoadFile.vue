@@ -58,9 +58,9 @@ function upload_file(file, metadata, link_metadata) {
               created_at: Date.now().toString(),
               filelocation: downloadURL,
               filename: link_metadata.filename,
-              filesize: link_metadata.filesize,
               filetoken: link_metadata.filetoken,
               filetype: link_metadata.filetype,
+              fileref: link_metadata.filetype + uniqueFileName,
               link: link_metadata.link,
               file_metadata: metadata,
             })
