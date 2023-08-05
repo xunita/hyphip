@@ -57,7 +57,6 @@ function upload_file(file, metadata, link_metadata) {
             setDoc(doc(db, "links", link_metadata.filetoken), {
               created_at: Date.now().toString(),
               filelocation: downloadURL,
-              filename: link_metadata.filename,
               filetoken: link_metadata.filetoken,
               filetype: link_metadata.filetype,
               fileref: link_metadata.filetype + uniqueFileName,
@@ -222,8 +221,6 @@ function savefile() {
           };
 
           const link_metadata = {
-            filename: filename,
-            filesize: filesize,
             filetoken: filetoken,
             filetype: filetype,
             link: link,
