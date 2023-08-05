@@ -1,8 +1,42 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch } from "vue";
-import { onBeforeRouteLeave } from "vue-router";
 const router = useRouter();
 const route = useRoute();
+function addMonthsToTimestamp(timestamp, monthsToAdd) {
+  // Convert Unix epoch timestamp to milliseconds
+  const milliseconds = timestamp * 1000;
+
+  // Create a new Date object using the timestamp
+  const date = new Date(milliseconds);
+
+  // Add the specified number of months to the date
+  date.setMonth(date.getMonth() + monthsToAdd);
+
+  // Convert the updated date back to a Unix epoch timestamp
+  const newTimestamp = Math.floor(date.getTime() / 1000);
+
+  return newTimestamp;
+}
+function getDateTimeFromTimestamp(timestamp) {
+  // Create a new Date object with the provided timestamp
+  const date = new Date(timestamp * 1000);
+
+  // Extract the components of the date
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // Adding 1 since months are zero-based (0 - 11)
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+
+  // Return the date and time in a readable format (e.g., "YYYY-MM-DD HH:MM:SS")
+  return `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")} ${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
 function upload_file(file, metadata, link_metadata) {
   try {
     unsetHasError();
@@ -53,9 +87,11 @@ function upload_file(file, metadata, link_metadata) {
             const db = nuxtApp.$firestore;
             const doc = nuxtApp.$fireDoc;
             const setDoc = nuxtApp.$fireSetDoc;
+            const created_at = +Date.now().toString() / 1000;
 
             setDoc(doc(db, "links", link_metadata.filetoken), {
-              created_at: Date.now().toString(),
+              created_at: created_at,
+              deadline: addMonthsToTimestamp(+created_at, 3),
               filelocation: downloadURL,
               filetoken: link_metadata.filetoken,
               filetype: link_metadata.filetype,
@@ -217,7 +253,7 @@ function savefile() {
             type: to_upload.type,
             size: filesize,
             name: filename,
-            lastmodified: to_upload.lastModified,
+            lastmodified: to_upload.lastModified / 1000,
           };
 
           const link_metadata = {
