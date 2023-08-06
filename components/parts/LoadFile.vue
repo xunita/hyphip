@@ -2,6 +2,14 @@
 import { onMounted, onUnmounted, watch } from "vue";
 const router = useRouter();
 const route = useRoute();
+function getStringAfter(str, search) {
+  const index = str.indexOf(search);
+  if (index === -1) {
+    return ""; // Return an empty string if the search string is not found
+  }
+  const startIndex = index + search.length;
+  return str.slice(startIndex);
+}
 function addMonthsToTimestamp(timestamp, monthsToAdd) {
   // Convert Unix epoch timestamp to milliseconds
   const milliseconds = timestamp * 1000;
@@ -40,7 +48,7 @@ function getDateTimeFromTimestamp(timestamp) {
 function upload_file(file, metadata, link_metadata) {
   try {
     unsetHasError();
-    const uniqueFileName = `${Date.now()}_${file.name}`;
+    const uniqueFileName = `${Date.now()}_hyphip_${file.name}`;
     const storage = nuxtApp.$firestorage;
     const fileRef = nuxtApp.$fireref(
       storage,
@@ -96,6 +104,7 @@ function upload_file(file, metadata, link_metadata) {
               filetoken: link_metadata.filetoken,
               filetype: link_metadata.filetype,
               fileref: link_metadata.filetype + uniqueFileName,
+              f_del_ref: link_metadata.f_del_ref,
               link: link_metadata.link,
               file_metadata: metadata,
             })
@@ -106,6 +115,7 @@ function upload_file(file, metadata, link_metadata) {
                   resetProgress();
                 }, 500);
                 // return navigateTo("/search");
+                // console.log(getStringAfter(link_metadata.f_del_ref, "hyphip_"));
                 unsetFileToLoad();
                 const url = "/" + link_metadata.filetype + link_metadata.link;
                 setTimeout(() => {
@@ -260,6 +270,7 @@ function savefile() {
             filetoken: filetoken,
             filetype: filetype,
             link: link,
+            f_del_ref: `${Date.now()}_hyphip_${to_upload.name}`,
           };
 
           // prepare to save
