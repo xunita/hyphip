@@ -534,6 +534,7 @@ function onChange(e) {
     if (isExtensionAllowed(file.value[0])) {
       readFile(file.value);
     } else {
+      unsetDropArea();
       setExtensionHasError();
     }
   } else {
@@ -552,6 +553,7 @@ function onDrop(e) {
   if (isExtensionAllowed(file.value[0])) {
     readFileDrop(file.value);
   } else {
+    unsetDropArea();
     setExtensionHasError();
   }
   unsetLoadSave();
@@ -712,10 +714,10 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
           <div v-show="enable_fileupload_button" class="file-load-button">
             <button
               @click="getFile"
-              class="b-file-load-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
+              class="b-file-load-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-2"
             >
               <svg
-                class="h-8 w-8"
+                class="h-6 w-6"
                 aria-hidden="true"
                 fill="none"
                 stroke="currentColor"
@@ -729,7 +731,7 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
                   stroke-linejoin="round"
                 ></path>
               </svg>
-              <span class="inline sm:text-sm text-xs font-semibold break-words"
+              <span class="inline text-xs font-semibold break-words"
                 >Upload your file</span
               >
               <input @change="onChange" id="file-upload" type="file" />
@@ -739,10 +741,10 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
           <div v-show="enable_savebutton" class="file-save-button">
             <button
               @click="savefile"
-              class="b-file-save-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
+              class="b-file-save-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-2"
             >
               <svg
-                class="h-8 w-8"
+                class="h-6 w-6"
                 aria-hidden="true"
                 fill="none"
                 stroke="currentColor"
@@ -756,7 +758,7 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
                   stroke-linejoin="round"
                 ></path>
               </svg>
-              <span class="inline sm:text-sm text-xs font-semibold break-words"
+              <span class="inline text-xs font-semibold break-words"
                 >Save your file</span
               >
             </button>
