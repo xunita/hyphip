@@ -197,28 +197,28 @@ onMounted(async () => {
               <span>Name</span>
             </div>
             <div
-              class="cursor-default py-0.5 w-1/3 border-l border-gray-400 px-3"
+              class="cursor-default py-0.5 w-1/3 border-l border-gray-800 px-3"
             >
               <span>Updated at</span>
             </div>
             <div
-              class="cursor-default py-0.5 w-1/3 border-l border-gray-400 px-3"
+              class="cursor-default py-0.5 w-1/3 border-l border-gray-800 px-3"
             >
               <span>Type</span>
             </div>
             <div
-              class="cursor-default py-0.5 w-1/3 border-l border-gray-400 px-3"
+              class="cursor-default py-0.5 w-1/3 border-l border-gray-800 px-3"
             >
               <span>Size</span>
             </div>
             <div
-              class="cursor-default py-0.5 w-1/3 border-l border-gray-400 px-3"
+              class="cursor-default py-0.5 w-1/3 border-l border-gray-800 px-3"
             >
               <span>Expired at</span>
             </div>
           </div>
           <div
-            class="text-white flex text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2 items-center"
+            class="border-t border-gray-800 text-white flex text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2.5 items-center"
           >
             <div :title="file.file_metadata.name" class="flex-none w-1/5 px-3">
               <div class="flex items-center space-x-2">
