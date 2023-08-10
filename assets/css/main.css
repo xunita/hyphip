@@ -1,6 +1,6 @@
 body,
 html {
-  background-color: #000000;
+  background-color: #000000 !important;
   /* min-height: 100vh; */
 }
 .bg-main {

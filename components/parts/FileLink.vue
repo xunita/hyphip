@@ -396,7 +396,7 @@ onMounted(async () => {
                   }}</span
                 >
               </div>
-              <div>
+              <div v-show="isToken">
                 <button
                   id="date-button-petit"
                   @click="openDatePetit"
@@ -539,11 +539,11 @@ onMounted(async () => {
                       getHumanReadableDateTimeFromTimestamp(file?.deadline)
                     }}</span>
                   </div>
-                  <div>
+                  <div v-show="isToken">
                     <button
                       id="date-button"
                       @click="openDate"
-                      class="rounded-full hover:bg-gray-700 p-1"
+                      class="rounded-full hover:text-white hover:bg-gray-700 p-1"
                     >
                       <svg
                         class="text-white h-4 w-4"
