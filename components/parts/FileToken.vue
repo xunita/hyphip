@@ -153,9 +153,7 @@ onMounted(async () => {
     </div>
     <div v-if="hasFile">
       <div class="flex flex-col space-y-5">
-        <div
-          class="flex items-end justify-between sm:border-none border-b border-gray-800 pb-1.5"
-        >
+        <div class="flex items-end justify-between border-gray-800">
           <button
             class="b-file-newfile-button text-white flex space-x-2 w-fit items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
           >
@@ -178,18 +176,18 @@ onMounted(async () => {
               >New file</span
             >
           </button>
-          <div
+          <!-- <div
             class="flex flex-col items-center sm:space-x-3 space-y-2 text-white sm:hidden"
           >
             <span class="text-xs">ordered by:</span>
             <button
               class="b-file-order-button text-white flex space-x-2 w-fit items-center hover:bg-gray-800 rounded-full px-5 py-2"
             >
-              <span class="inline text-sm font-semibold break-words"
+              <span class="inline text-xs font-semibold break-words"
                 >Name (asc)
               </span>
             </button>
-          </div>
+          </div> -->
         </div>
         <div class="flex flex-col space-y-3">
           <div class="text-gray-400 flex items-center text-xs">
@@ -197,30 +195,30 @@ onMounted(async () => {
               <span>Name</span>
             </div>
             <div
-              class="cursor-default py-0.5 w-1/3 border-l border-gray-400 px-3"
+              class="cursor-default py-0.5 w-1/3 border-l border-gray-800 px-3"
             >
               <span>Updated at</span>
             </div>
             <div
-              class="cursor-default py-0.5 w-1/3 border-l border-gray-400 px-3"
+              class="cursor-default py-0.5 w-1/3 border-l border-gray-800 px-3"
             >
               <span>Type</span>
             </div>
             <div
-              class="cursor-default py-0.5 w-1/3 border-l border-gray-400 px-3"
+              class="cursor-default py-0.5 w-1/3 border-l border-gray-800 px-3"
             >
               <span>Size</span>
             </div>
             <div
-              class="cursor-default py-0.5 w-1/3 border-l border-gray-400 px-3"
+              class="cursor-default py-0.5 w-1/3 border-l border-gray-800 px-3"
             >
               <span>Expired at</span>
             </div>
           </div>
           <div
-            class="text-white flex text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2 items-center"
+            class="border-t border-gray-800 text-white flex text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2.5 items-center"
           >
-            <div :title="file.file_metadata.name" class="flex-none w-1/5 px-3">
+            <div :title="file.file_metadata.name" class="flex-none w-1/5 px-1">
               <div class="flex items-center space-x-2">
                 <div v-show="file.filetype == 'pdfs/'">
                   <svg
