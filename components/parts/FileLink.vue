@@ -13,6 +13,7 @@ function stringDateToTimestamp(dateString) {
 
 function setUpDate(timestamp) {
   const datePicker = document.getElementById("datePicker");
+  const datePickerPetit = document.getElementById("datePickerPetit");
 
   // Set the minimum and maximum date
   const today = new Date();
@@ -20,7 +21,10 @@ function setUpDate(timestamp) {
   maxDate.setMonth(maxDate.getMonth() + 6); // Set maximum date to 6 months from maxDate
 
   datePicker.min = today.toISOString().split("T")[0];
+  datePickerPetit.min = today.toISOString().split("T")[0];
+
   datePicker.max = maxDate.toISOString().split("T")[0];
+  datePickerPetit.max = maxDate.toISOString().split("T")[0];
 }
 function openDatePetit() {
   const datePicker = document.getElementById("datePickerPetit");
@@ -418,7 +422,7 @@ onMounted(async () => {
                   @change="selectDatePetit"
                   type="date"
                   id="datePickerPetit"
-                  class="rounded w-0 h-0 bg-transparent border-transparent"
+                  class="rounded w-0 h-0 focus:outline-none bg-transparent border-transparent"
                 />
               </div>
             </div>
