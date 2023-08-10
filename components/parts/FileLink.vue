@@ -5,25 +5,32 @@ const file = useState("file", () => null);
 const isToken = useState("isToken", () => false);
 const isLink = useState("isLink", () => false);
 const hasFile = useState("hasFile", () => false);
-function getFileLink(fileType) {
-  let link;
+const deadlineDate = useState("deadlineDate", () => 0);
+function stringDateToTimestamp(dateString) {
+  const timestamp = Date.parse(dateString);
+  return timestamp / 1000;
+}
 
-  switch (fileType) {
-    case "pdfs/":
-      link = "/assets/svg/pdf icon.svg";
-      break;
-    case "images/":
-      link = "/assets/svg/image svg.svg";
-      break;
-    case "videos/":
-      link = "/assets/svg/video svg.svg";
-      break;
-    default:
-      link = "";
-      break;
-  }
+function setUpDate(timestamp) {
+  const datePicker = document.getElementById("datePicker");
 
-  return link;
+  // Set the minimum and maximum date
+  const today = new Date();
+  const maxDate = new Date(timestamp * 1000); // Date that can be max out
+  maxDate.setMonth(maxDate.getMonth() + 6); // Set maximum date to 6 months from maxDate
+
+  datePicker.min = today.toISOString().split("T")[0];
+  datePicker.max = maxDate.toISOString().split("T")[0];
+}
+function openDate() {
+  const datePicker = document.getElementById("datePicker");
+  datePicker.showPicker();
+}
+function selectDate(timestamp) {
+  const datePicker = document.getElementById("datePicker");
+  deadlineDate.value = stringDateToTimestamp(datePicker.value);
+
+  // updateDeadlineDate(deadlineDate.value);
 }
 function formatFileSize(bytes) {
   if (bytes === 0) return "0 B";
@@ -32,7 +39,7 @@ function formatFileSize(bytes) {
   const k = 1024;
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + units[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + units[i];
 }
 function getStringAfter(str, search) {
   const index = str.indexOf(search);
@@ -42,6 +49,49 @@ function getStringAfter(str, search) {
   const startIndex = index + search.length;
   return str.slice(startIndex);
 }
+function getHumanReadableDateTimeFromTimestamp(timestamp) {
+  // Define arrays for month and day names
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  // Create a new Date object with the provided timestamp
+  const date = new Date(timestamp * 1000);
+
+  // Extract the components of the date
+  const year = date.getFullYear();
+  const month = months[date.getMonth()];
+  const dayOfWeek = days[date.getDay()];
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+
+  // Return the date and time in a readable format
+  return `${month} ${day}, ${year}`;
+}
+
 function getDateTimeFromTimestamp(timestamp) {
   // Create a new Date object with the provided timestamp
   const date = new Date(timestamp * 1000);
@@ -124,6 +174,7 @@ async function getFile() {
 }
 onMounted(async () => {
   await getFile();
+  setUpDate(file.value.created_at);
 });
 </script>
 <template>
@@ -155,10 +206,10 @@ onMounted(async () => {
       <div class="flex flex-col space-y-5">
         <div class="flex items-end justify-between border-gray-800">
           <button
-            class="b-file-newfile-button text-white flex space-x-2 w-fit items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
+            class="b-file-newfile-button text-white flex space-x-2 w-fit items-center hover:bg-gray-800 rounded-full px-4 py-2"
           >
             <svg
-              class="h-7 w-7"
+              class="h-5 w-5"
               aria-hidden="true"
               fill="none"
               stroke="currentColor"
@@ -172,10 +223,11 @@ onMounted(async () => {
                 stroke-linejoin="round"
               ></path>
             </svg>
-            <span class="inline text-sm font-semibold break-words"
+            <span class="inline text-xs font-semibold break-words"
               >New file</span
             >
           </button>
+
           <!-- <div
             class="flex flex-col items-center sm:space-x-3 space-y-2 text-white sm:hidden"
           >
@@ -189,9 +241,9 @@ onMounted(async () => {
             </button>
           </div> -->
         </div>
-        <div class="flex flex-col space-y-3">
-          <div class="text-gray-400 flex items-center text-xs">
-            <div class="cursor-default py-0.5 flex-none w-1/5 px-3">
+        <div class="sm:flex block sm:flex-col sm:space-y-3">
+          <div class="sm:flex hidden text-gray-400 items-center text-xs">
+            <div class="cursor-default py-0.5 flex-none w-1/4 px-3">
               <span>Name</span>
             </div>
             <div
@@ -215,14 +267,170 @@ onMounted(async () => {
               <span>Expired at</span>
             </div>
           </div>
+          <!-- -sm -->
           <div
-            class="border-t border-gray-800 text-white flex text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2.5 items-center"
+            class="border-t border-gray-800 text-white sm:hidden flex flex-col space-y-1 text-xs hover:bg-gray-800 hover:cursor-pointer py-2.5 pl-4 pr-3"
           >
-            <div :title="file.file_metadata.name" class="flex-none w-1/5 px-1">
-              <div class="flex items-center space-x-2">
-                <div v-show="file.filetype == 'pdfs/'">
+            <div class="flex items-center justify-between">
+              <div :title="file?.file_metadata.name" class="w-5/6">
+                <div class="flex items-center space-x-2">
+                  <div v-if="file?.filetype == 'pdfs/'">
+                    <svg
+                      class="w-4 h-4 text-red-500"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        d="M4.5 11H4v1h.5a.5.5 0 0 0 0-1ZM7 5V.13a2.96 2.96 0 0 0-1.293.749L2.879 3.707A2.96 2.96 0 0 0 2.13 5H7Zm3.375 6H10v3h.375a.624.624 0 0 0 .625-.625v-1.75a.624.624 0 0 0-.625-.625Z"
+                      />
+                      <path
+                        d="M19 7h-1V2a1.97 1.97 0 0 0-1.933-2H9v5a2 2 0 0 1-2 2H1a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1a1.969 1.969 0 0 0 1.933 2h12.134c1.1 0 1.7-1.236 1.856-1.614a.988.988 0 0 0 .07-.386H19a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1ZM4.5 14H4v1a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1h1.5a2.5 2.5 0 1 1 0 5Zm8.5-.625A2.63 2.63 0 0 1 10.375 16H9a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h1.375A2.63 2.63 0 0 1 13 11.625v1.75ZM17 12a1 1 0 0 1 0 2h-1v1a1 1 0 0 1-2 0v-5a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2h-1v1h1Z"
+                      />
+                    </svg>
+                  </div>
+                  <div v-if="file?.filetype == 'images/'">
+                    <svg
+                      class="w-4 h-4 text-blue-500"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 20 18"
+                    >
+                      <path
+                        d="M18 0H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.376 10.481A1 1 0 0 1 16 15H4a1 1 0 0 1-.895-1.447l3.5-7A1 1 0 0 1 7.468 6a.965.965 0 0 1 .9.5l2.775 4.757 1.546-1.887a1 1 0 0 1 1.618.1l2.541 4a1 1 0 0 1 .028 1.011Z"
+                      />
+                    </svg>
+                  </div>
+                  <div v-if="file?.filetype == 'videos/'">
+                    <svg
+                      class="w-4 h-4 text-blue-500"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 16 20"
+                    >
+                      <path
+                        d="M5 5V.13a2.96 2.96 0 0 0-1.293.749L.879 3.707A2.98 2.98 0 0 0 .13 5H5Z"
+                      />
+                      <path
+                        d="M14.066 0H7v5a2 2 0 0 1-2 2H0v11a1.97 1.97 0 0 0 1.934 2h12.132A1.97 1.97 0 0 0 16 18V2a1.97 1.97 0 0 0-1.934-2ZM9 13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2Zm4 .382a1 1 0 0 1-1.447.894L10 13v-2l1.553-1.276a1 1 0 0 1 1.447.894v2.764Z"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="whitespace-nowrap text-ellipsis overflow-hidden font-semibold"
+                  >
+                    <span>{{ file?.file_metadata.name }}</span>
+                  </div>
+                </div>
+              </div>
+              <button class="rounded-full hover:bg-gray-700 p-1">
+                <svg
+                  class="text-white h-5 w-5 font-semibold"
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+            <div class="flex items-center justify-between text-gray-400">
+              <div
+                :title="getHumanReadableDateTimeFromTimestamp(file?.created_at)"
+                class="whitespace-nowrap text-ellipsis overflow-hidden text-xs"
+              >
+                <span>{{
+                  getHumanReadableDateTimeFromTimestamp(file?.created_at)
+                }}</span>
+              </div>
+              <div
+                :title="formatFileSize(file?.file_metadata.size)"
+                class="whitespace-nowrap text-ellipsis overflow-hidden"
+              >
+                <span>{{ formatFileSize(file?.file_metadata.size) }}</span>
+              </div>
+            </div>
+            <div
+              :title="getHumanReadableDateTimeFromTimestamp(file?.deadline)"
+              class="flex items-center space-x-1 whitespace-nowrap text-ellipsis overflow-hidden text-gray-400"
+            >
+              <div class="whitespace-nowrap text-ellipsis overflow-hidden">
+                <span
+                  >Expire at
+                  {{
+                    getHumanReadableDateTimeFromTimestamp(file?.deadline)
+                  }}</span
+                >
+              </div>
+              <div>
+                <button
+                  id="date-button"
+                  @click="openDate"
+                  class="rounded-full hover:bg-gray-700 p-1"
+                >
                   <svg
-                    class="w-5 h-5 text-red-500"
+                    class="text-white h-4 w-4"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+                </button>
+                <input
+                  @change="selectDate"
+                  type="date"
+                  id="datePicker"
+                  class="rounded w-0 h-0 bg-transparent border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- +sm -->
+          <div
+            class="border-t border-gray-800 text-white sm:flex hidden relative text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2.5 items-center"
+          >
+            <button
+              class="absolute right-2 rounded-full hover:bg-gray-700 p-1 opacity-75"
+            >
+              <svg
+                class="text-white h-5 w-5 font-semibold"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+              </svg>
+            </button>
+            <div :title="file?.file_metadata.name" class="flex-none w-1/4 px-1">
+              <div class="flex items-center space-x-2">
+                <div v-show="file?.filetype == 'pdfs/'">
+                  <svg
+                    class="w-4 h-4 text-red-500"
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="currentColor"
@@ -236,9 +444,9 @@ onMounted(async () => {
                     />
                   </svg>
                 </div>
-                <div v-show="file.filetype == 'images/'">
+                <div v-show="file?.filetype == 'images/'">
                   <svg
-                    class="w-5 h-5 text-blue-500"
+                    class="w-4 h-4 text-blue-500"
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="currentColor"
@@ -249,9 +457,9 @@ onMounted(async () => {
                     />
                   </svg>
                 </div>
-                <div v-show="file.filetype == 'videos/'">
+                <div v-show="file?.filetype == 'videos/'">
                   <svg
-                    class="w-5 h-5 text-blue-500"
+                    class="w-4 h-4 text-blue-500"
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="currentColor"
@@ -266,37 +474,80 @@ onMounted(async () => {
                   </svg>
                 </div>
                 <div class="whitespace-nowrap text-ellipsis overflow-hidden">
-                  <span>{{ file.file_metadata.name }}</span>
+                  <span>{{ file?.file_metadata.name }}</span>
                 </div>
               </div>
             </div>
             <div
-              :title="getDateTimeFromTimestamp(file.created_at)"
+              :title="getHumanReadableDateTimeFromTimestamp(file?.created_at)"
               class="w-1/3 px-3 whitespace-nowrap text-ellipsis overflow-hidden"
             >
-              <span>{{ getDateTimeFromTimestamp(file.created_at) }}</span>
+              <span>{{
+                getHumanReadableDateTimeFromTimestamp(file?.created_at)
+              }}</span>
             </div>
             <div
               :title="
-                getStringAfter(file.file_metadata.type, '/').toUpperCase()
+                getStringAfter(file?.file_metadata.type, '/').toUpperCase()
               "
               class="w-1/3 px-3 whitespace-nowrap text-ellipsis overflow-hidden"
             >
               <span>{{
-                getStringAfter(file.file_metadata.type, "/").toUpperCase()
+                getStringAfter(file?.file_metadata.type, "/").toUpperCase()
               }}</span>
             </div>
             <div
-              :title="formatFileSize(file.file_metadata.size)"
+              :title="formatFileSize(file?.file_metadata.size)"
               class="w-1/3 px-3 whitespace-nowrap text-ellipsis overflow-hidden"
             >
-              <span>{{ formatFileSize(file.file_metadata.size) }}</span>
+              <span>{{ formatFileSize(file?.file_metadata.size) }}</span>
             </div>
             <div
-              :title="getDateTimeFromTimestamp(file.deadline)"
+              :title="getHumanReadableDateTimeFromTimestamp(file?.deadline)"
               class="w-1/3 px-3 whitespace-nowrap text-ellipsis overflow-hidden"
             >
-              <span>{{ getDateTimeFromTimestamp(file.deadline) }}</span>
+              <div
+                class="w-3/4 whitespace-nowrap text-ellipsis overflow-hidden"
+              >
+                <div class="flex items-center space-x-2">
+                  <div
+                    class="w-5/6 whitespace-nowrap text-ellipsis overflow-hidden"
+                  >
+                    <span>{{
+                      getHumanReadableDateTimeFromTimestamp(file?.deadline)
+                    }}</span>
+                  </div>
+                  <div>
+                    <button
+                      id="date-button"
+                      @click="openDate"
+                      class="rounded-full hover:bg-gray-700 p-1"
+                    >
+                      <svg
+                        class="text-white h-4 w-4"
+                        aria-hidden="true"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        ></path>
+                      </svg>
+                    </button>
+                    <input
+                      @change="selectDate"
+                      type="date"
+                      id="datePicker"
+                      class="rounded w-0 h-0 bg-transparent border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
