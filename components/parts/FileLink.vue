@@ -22,16 +22,36 @@ function setUpDate(timestamp) {
   datePicker.min = today.toISOString().split("T")[0];
   datePicker.max = maxDate.toISOString().split("T")[0];
 }
+function openDatePetit() {
+  const datePicker = document.getElementById("datePickerPetit");
+  datePicker.showPicker();
+  datePicker.focus();
+}
+
 function openDate() {
   const datePicker = document.getElementById("datePicker");
   datePicker.showPicker();
+  datePicker.focus();
 }
+
 function selectDate(timestamp) {
   const datePicker = document.getElementById("datePicker");
   deadlineDate.value = stringDateToTimestamp(datePicker.value);
 
+  console.log("long: " + datePicker.value);
+
   // updateDeadlineDate(deadlineDate.value);
 }
+
+function selectDatePetit(timestamp) {
+  const datePicker = document.getElementById("datePickerPetit");
+  deadlineDate.value = stringDateToTimestamp(datePicker.value);
+
+  console.log("petit: " + datePicker.value);
+
+  // updateDeadlineDate(deadlineDate.value);
+}
+
 function formatFileSize(bytes) {
   if (bytes === 0) return "0 B";
 
@@ -374,8 +394,8 @@ onMounted(async () => {
               </div>
               <div>
                 <button
-                  id="date-button"
-                  @click="openDate"
+                  id="date-button-petit"
+                  @click="openDatePetit"
                   class="rounded-full hover:bg-gray-700 p-1"
                 >
                   <svg
@@ -395,9 +415,9 @@ onMounted(async () => {
                   </svg>
                 </button>
                 <input
-                  @change="selectDate"
+                  @change="selectDatePetit"
                   type="date"
-                  id="datePicker"
+                  id="datePickerPetit"
                   class="rounded w-0 h-0 bg-transparent border-transparent"
                 />
               </div>
@@ -537,11 +557,12 @@ onMounted(async () => {
                         ></path>
                       </svg>
                     </button>
+
                     <input
                       @change="selectDate"
                       type="date"
                       id="datePicker"
-                      class="rounded w-0 h-0 bg-transparent border-transparent"
+                      class="rounded w-0 h-0 focus:outline-none bg-transparent border-none border-transparent"
                     />
                   </div>
                 </div>
