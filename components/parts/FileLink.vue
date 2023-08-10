@@ -510,9 +510,7 @@ onMounted(async () => {
                 class="w-3/4 whitespace-nowrap text-ellipsis overflow-hidden"
               >
                 <div class="flex items-center space-x-2">
-                  <div
-                    class="w-5/6 whitespace-nowrap text-ellipsis overflow-hidden"
-                  >
+                  <div class="whitespace-nowrap text-ellipsis overflow-hidden">
                     <span>{{
                       getHumanReadableDateTimeFromTimestamp(file?.deadline)
                     }}</span>
