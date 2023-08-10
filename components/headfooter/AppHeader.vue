@@ -1,8 +1,8 @@
 <template>
-  <div class="border-b border-gray-800">
-    <nav class="py-2 sm:px-16 px-6 flex justify-between items-center">
+  <div class="border-b z-10 border-gray-800 sticky top-0 bg-main">
+    <nav class="py-3 sm:px-16 px-6 flex justify-between items-center">
       <div class="logo">
-        <NuxtLink to="/" alt="Hyphip logo" class="flex items-center space-x-1"
+        <a href="/" alt="Hyphip logo" class="flex items-center space-x-1"
           ><svg
             class="p-1"
             width="128"
@@ -28,9 +28,9 @@
           <span class="text-white font-semibold text-xs"
             >(Demo with img, video & pdf)</span
           >
-        </NuxtLink>
+        </a>
       </div>
-      <div class="login-button">
+      <!-- <div class="login-button">
         <button
           class="b-login-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full sm:px-6 px-3 py-3"
         >
@@ -53,7 +53,7 @@
             >Sign In</span
           >
         </button>
-      </div>
+      </div> -->
     </nav>
   </div>
 </template>

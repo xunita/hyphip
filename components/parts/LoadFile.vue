@@ -117,7 +117,8 @@ function upload_file(file, metadata, link_metadata) {
                 // return navigateTo("/search");
                 // console.log(getStringAfter(link_metadata.f_del_ref, "hyphip_"));
                 unsetFileToLoad();
-                const url = "/" + link_metadata.filetype + link_metadata.link;
+                const url =
+                  "/" + link_metadata.filetype + link_metadata.filetoken;
                 setTimeout(() => {
                   window.location.assign(url);
                 }, 0);
@@ -612,6 +613,13 @@ onMounted(() => {
       window.onbeforeunload = function () {};
     }
   });
+  watch(file_loading_or_saving, async (newCheck, oldCheck) => {
+    if (newCheck) {
+      window.onbeforeunload = function () {
+        if (newCheck == true) return "handle your events or msgs here";
+      };
+    }
+  });
   events.forEach((eventName) => {
     document.body.addEventListener(eventName, preventDefaults);
   });
@@ -627,6 +635,7 @@ onMounted(() => {
 // });
 
 onUnmounted(() => {
+  reset();
   events.forEach((eventName) => {
     document.body.removeEventListener(eventName, preventDefaults);
   });
@@ -653,140 +662,135 @@ const enable_filedrop_area = useState("enable_filedrop_area", () => false);
 const file_loading_or_saving = useState("file_loading_or_saving", () => false);
 </script>
 <template>
-  <div
-    class="relative my-32 lg:mx-64 md:mx-24 mx-8 flex flex-col space-y-16 items-center"
-  >
-    <div class="relative text-white">
-      <div
-        @drop.prevent="onDrop"
-        @dragleave.prevent="disableDragDiv"
-        @dragenter.prevent="enableDragDiv"
-        @dragover.prevent="enableDragDiv"
-        v-show="enable_filedrop_area"
-        class="absolute flex flex-col justify-center rounded-lg w-full h-full absolute bg-slate-700"
-      >
-        <span class="text-2xl text-center font-semibold">Drop your file</span>
-      </div>
-
-      <div v-show="file_loading_or_saving">
+  <div>
+    <div>
+      <div class="relative text-white">
         <div
-          class="absolute opacity-50 rounded-lg lg:px-20 md:px-16 px-8 -py-6 w-full h-full absolute bg-slate-700"
-        ></div>
-        <div
-          class="absolute w-full bg-gray-200 rounded-t-full h-1 mb-4 dark:bg-gray-700"
+          @drop.prevent="onDrop"
+          @dragleave.prevent="disableDragDiv"
+          @dragenter.prevent="enableDragDiv"
+          @dragover.prevent="enableDragDiv"
+          v-show="enable_filedrop_area"
+          class="absolute flex flex-col justify-center rounded w-full h-full absolute bg-slate-700"
         >
+          <span class="text-2xl text-center font-semibold">Drop your file</span>
+        </div>
+
+        <div class="absolute w-full h-full" v-show="file_loading_or_saving">
+          <div
+            class="opacity-50 rounded absolute w-full h-full absolute bg-slate-700"
+          ></div>
           <div
             :class="{
-              'rounded-tl-lg': progressLevel < 100,
-              'rounded-t-lg': progressLevel == 100,
+              'rounded-tl': progressLevel < 100,
+              'rounded-t': progressLevel == 100,
             }"
-            class="progress-bar-color h-1 dark:bg-blue-500 smooth-width-increase"
+            class="absolute w-full bg-gray-200 h-1 progress-bar-color smooth-width-increase"
             :style="{ width: `${progressLevel}%` }"
           ></div>
         </div>
+
+        <div
+          @dragenter.prevent="enableDragDiv"
+          @dragover.prevent="enableDragDiv"
+          class="load-file-div border border-gray-800 rounded lg:px-20 md:px-16 px-8 py-6 flex flex-col justify-items-center items-center space-y-3.5"
+        >
+          <h1 class="font-bold text-2xl">Link your file</h1>
+          <span class="inline text-center break-words text-sm"
+            >Manage your files by linking them. HYPHIP help you save, edit,
+            preview your files. It's then easy for you to access your files
+            anytime and anywhere you want.
+          </span>
+
+          <span
+            v-show="enable_filename"
+            class="inline text-center break-words text-md font-bold text-ellipsis"
+          >
+            {{ filename }}
+          </span>
+
+          <div v-show="enable_fileupload_button" class="file-load-button">
+            <button
+              @click="getFile"
+              class="b-file-load-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
+            >
+              <svg
+                class="h-8 w-8"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+              </svg>
+              <span class="inline sm:text-sm text-xs font-semibold break-words"
+                >Upload your file</span
+              >
+              <input @change="onChange" id="file-upload" type="file" />
+            </button>
+          </div>
+
+          <div v-show="enable_savebutton" class="file-save-button">
+            <button
+              @click="savefile"
+              class="b-file-save-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
+            >
+              <svg
+                class="h-8 w-8"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+              </svg>
+              <span class="inline sm:text-sm text-xs font-semibold break-words"
+                >Save your file</span
+              >
+            </button>
+          </div>
+          <div v-show="enable_savebutton" class="file-reset-button">
+            <button
+              @click="reset"
+              class="b-file-reset-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-6 py-1.5"
+            >
+              <span class="inline sm:text-sm text-xs font-semibold break-words"
+                >Reset</span
+              >
+            </button>
+          </div>
+          <span
+            v-show="enable_filedrop_span"
+            class="inline text-center break-words text-xs"
+            >You can also drop your file here
+          </span>
+          <span
+            v-show="enable_error"
+            class="inline text-center break-words text-xs text-red-400"
+            >Oops, something went wrong, try again
+          </span>
+          <span
+            v-show="enable_extension_error"
+            class="inline text-center break-words text-xs text-red-400"
+          >
+            Sorry, this extension is not allowed
+          </span>
+        </div>
       </div>
 
-      <div
-        @dragenter.prevent="enableDragDiv"
-        @dragover.prevent="enableDragDiv"
-        class="load-file-div border border-gray-800 rounded-lg lg:px-20 md:px-16 px-8 py-6 flex flex-col justify-items-center items-center space-y-3.5"
-      >
-        <h1 class="font-bold text-2xl">Link your file</h1>
-        <span class="inline text-center break-words text-sm"
-          >Manage your files by linking them. HYPHIP help you save, edit,
-          preview your files. It's then easy for you to access your files
-          anytime and anywhere you want.
-        </span>
-
-        <span
-          v-show="enable_filename"
-          class="inline text-center break-words text-md font-bold text-ellipsis"
-        >
-          {{ filename }}
-        </span>
-
-        <div v-show="enable_fileupload_button" class="file-load-button">
-          <button
-            @click="getFile"
-            class="b-file-load-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
-          >
-            <svg
-              class="h-8 w-8"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-            </svg>
-            <span class="inline sm:text-sm text-xs font-semibold break-words"
-              >Upload your file</span
-            >
-            <input @change="onChange" id="file-upload" type="file" />
-          </button>
-        </div>
-
-        <div v-show="enable_savebutton" class="file-save-button">
-          <button
-            @click="savefile"
-            class="b-file-save-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-1.5"
-          >
-            <svg
-              class="h-8 w-8"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-            </svg>
-            <span class="inline sm:text-sm text-xs font-semibold break-words"
-              >Save your file</span
-            >
-          </button>
-        </div>
-        <div v-show="enable_savebutton" class="file-reset-button">
-          <button
-            @click="reset"
-            class="b-file-reset-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-6 py-1.5"
-          >
-            <span class="inline sm:text-sm text-xs font-semibold break-words"
-              >Reset</span
-            >
-          </button>
-        </div>
-        <span
-          v-show="enable_filedrop_span"
-          class="inline text-center break-words text-xs"
-          >You can also drop your file here
-        </span>
-        <span
-          v-show="enable_error"
-          class="inline text-center break-words text-xs text-red-400"
-          >Oops, something went wrong, try again
-        </span>
-        <span
-          v-show="enable_extension_error"
-          class="inline text-center break-words text-xs text-red-400"
-        >
-          Sorry, this extension is not allowed
-        </span>
-      </div>
+      <!-- <PartsLogInMessage /> -->
     </div>
-
-    <PartsLogInMessage />
-    <div class="h-128"></div>
   </div>
 </template>

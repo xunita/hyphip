@@ -2,7 +2,16 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import {
   getStorage,
   ref as fireref,
@@ -57,4 +66,19 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   nuxtApp.vueApp.provide("fireSetDoc", setDoc);
   nuxtApp.provide("fireSetDoc", setDoc);
+
+  nuxtApp.vueApp.provide("fireGetDoc", getDoc);
+  nuxtApp.provide("fireGetDoc", getDoc);
+
+  nuxtApp.vueApp.provide("fireQuery", query);
+  nuxtApp.provide("fireQuery", query);
+
+  nuxtApp.vueApp.provide("fireWhere", where);
+  nuxtApp.provide("fireWhere", where);
+
+  nuxtApp.vueApp.provide("fireCollection", collection);
+  nuxtApp.provide("fireCollection", collection);
+
+  nuxtApp.vueApp.provide("fireGetDocs", getDocs);
+  nuxtApp.provide("fireGetDocs", getDocs);
 });
