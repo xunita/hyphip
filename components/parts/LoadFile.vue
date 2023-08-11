@@ -98,6 +98,7 @@ function upload_file(file, metadata, link_metadata) {
             const created_at = +Date.now().toString() / 1000;
 
             setDoc(doc(db, "links", link_metadata.filetoken), {
+              uploaded_at: created_at,
               created_at: created_at,
               deadline: addMonthsToTimestamp(+created_at, 3),
               filelocation: downloadURL,

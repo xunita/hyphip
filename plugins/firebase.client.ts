@@ -11,6 +11,7 @@ import {
   query,
   where,
   getDocs,
+  updateDoc,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -81,4 +82,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   nuxtApp.vueApp.provide("fireGetDocs", getDocs);
   nuxtApp.provide("fireGetDocs", getDocs);
+
+  nuxtApp.vueApp.provide("fireUpdateDoc ", updateDoc);
+  nuxtApp.provide("fireUpdateDoc", updateDoc);
 });

@@ -1,6 +1,31 @@
 <script setup lang="ts">
 const route = useRoute();
 const nuxtApp = useNuxtApp();
+
+const more = useState("more", () => false);
+const morePetit = useState("morePetit", () => false);
+const outsideMore = useState("outsideMore", () => true);
+
+function handleClick(event) {
+  more.value = !more.value;
+  morePetit.value = !morePetit.value;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+const timeoutId = useState("timeoutId ", () => 0);
+
+const setNotif = useState("setNotif", () => false);
+const notifMessage = useState("notifMessage", () => "Hyphip");
+
+const notifications = useState("notifications", () => []);
+
+// watch(notifications, async (newCheck, oldCheck) => {});
+
 const file = useState("file", () => null);
 const isToken = useState("isToken", () => false);
 const isLink = useState("isLink", () => false);
@@ -38,20 +63,45 @@ function openDate() {
   datePicker.focus();
 }
 
-function selectDate(timestamp) {
+async function notify(message) {
+  if (setNotif.value) {
+    clearTimeout(timeoutId.value);
+    setNotif.value = false;
+    await delay(30);
+  }
+  setNotif.value = true;
+  notifMessage.value = message;
+  timeoutId.value = setTimeout(() => {
+    setNotif.value = false;
+  }, 3000);
+}
+
+async function updateDeadline(timestamp) {
+  try {
+    const db = nuxtApp.$firestore;
+    const linkRef = nuxtApp.$fireDoc(db, "links", file.value.filetoken);
+    await nuxtApp.$fireUpdateDoc(linkRef, {
+      deadline: timestamp,
+    });
+    file.value.deadline = timestamp;
+    notify("Deadline updated successfully");
+  } catch (error) {
+    notify("Oops, something wrong happened, try again");
+  }
+}
+
+function selectDate() {
   const datePicker = document.getElementById("datePicker");
   deadlineDate.value = stringDateToTimestamp(datePicker.value);
-
-  console.log("long: " + datePicker.value);
+  updateDeadline(deadlineDate.value);
 
   // updateDeadlineDate(deadlineDate.value);
 }
 
-function selectDatePetit(timestamp) {
+function selectDatePetit() {
   const datePicker = document.getElementById("datePickerPetit");
   deadlineDate.value = stringDateToTimestamp(datePicker.value);
-
-  console.log("petit: " + datePicker.value);
+  updateDeadline(deadlineDate.value);
 
   // updateDeadlineDate(deadlineDate.value);
 }
@@ -197,12 +247,25 @@ async function getFile() {
   }
 }
 onMounted(async () => {
+  // document.addEventListener("click", handleClicked);
   await getFile();
-  setUpDate(file.value.created_at);
+  setUpDate(file.value.uploaded_at);
+
+  const parent = document.getElementById("parent");
+  const parentPetit = document.getElementById("parentPetit");
+  document.addEventListener("click", (event) => {
+    if (event.target !== parent && !parent.contains(event.target)) {
+      more.value = false;
+    }
+    if (event.target !== parentPetit && !parentPetit.contains(event.target)) {
+      morePetit.value = false;
+    }
+  });
 });
 </script>
 <template>
   <div>
+    <PartsNotification v-show="setNotif" :message="notifMessage" />
     <div
       v-show="!hasFile"
       role="status"
@@ -350,23 +413,32 @@ onMounted(async () => {
                   </div>
                 </div>
               </div>
-              <button class="rounded-full hover:bg-gray-700 p-1">
-                <svg
-                  class="text-white h-5 w-5 font-semibold"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+              <div id="parentPetit" class="relative">
+                <button
+                  @click="handleClick"
+                  class="rounded-full hover:bg-gray-700 p-1"
                 >
-                  <path
-                    d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></path>
-                </svg>
-              </button>
+                  <svg
+                    class="text-white h-5 w-5 font-semibold"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+                </button>
+                <PartsFileDropDown
+                  v-show="morePetit"
+                  class="absolute transition duration-150 ease-in-out right-0 bg-main target-element"
+                />
+              </div>
             </div>
             <div class="flex items-center justify-between text-gray-400">
               <div
@@ -431,25 +503,32 @@ onMounted(async () => {
           <div
             class="border-t border-gray-800 text-white sm:flex hidden relative text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2.5 items-center"
           >
-            <button
-              class="absolute right-2 rounded-full hover:bg-gray-700 p-1 opacity-75"
-            >
-              <svg
-                class="text-white h-5 w-5 font-semibold"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+            <div id="parent" class="absolute right-2">
+              <button
+                @click="handleClick"
+                class="rounded-full hover:bg-gray-700 p-1 opacity-75 target-element"
               >
-                <path
-                  d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></path>
-              </svg>
-            </button>
+                <svg
+                  class="text-white h-5 w-5 font-semibold"
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </svg>
+              </button>
+              <PartsFileDropDown
+                v-show="more"
+                class="absolute transition duration-150 ease-in-out right-0 bg-main target-element"
+              />
+            </div>
             <div :title="file?.file_metadata.name" class="flex-none w-1/4 px-1">
               <div class="flex items-center space-x-2">
                 <div v-show="file?.filetype == 'pdfs/'">
