@@ -4,11 +4,20 @@ const nuxtApp = useNuxtApp();
 
 const more = useState("more", () => false);
 const morePetit = useState("morePetit", () => false);
-const outsideMore = useState("outsideMore", () => true);
 
-function handleClick(event) {
+const wantFile = useState("wantFile", () => false);
+
+function handleClick() {
   more.value = !more.value;
   morePetit.value = !morePetit.value;
+}
+
+function nofiling() {
+  wantFile.value = false;
+}
+
+function filing() {
+  window.location.assign("/");
 }
 
 function delay(ms) {
@@ -265,6 +274,33 @@ onMounted(async () => {
 </script>
 <template>
   <div>
+    <!-- <div
+      v-show="wantFile"
+      class="fixed top-0 left-0 bg-black/90 z-10 w-full h-full"
+    >
+      <div @click.prevent="nofiling" class="absolute w-full h-full"></div>
+      <div>
+        <button
+          @click.prevent="nofiling"
+          class="b-file-back-button text-white flex space-x-2 w-fit items-center border border-gray-500 rounded-lg px-4 py-2 relative left-6 top-6"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-5 h-5"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M9.53 2.47a.75.75 0 010 1.06L4.81 8.25H15a6.75 6.75 0 010 13.5h-3a.75.75 0 010-1.5h3a5.25 5.25 0 100-10.5H4.81l4.72 4.72a.75.75 0 11-1.06 1.06l-6-6a.75.75 0 010-1.06l6-6a.75.75 0 011.06 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span class="inline text-xs font-semibold break-words">Get Back</span>
+        </button>
+        <PartsLoadFile class="flex justify-center items-center min-h-screen" />
+      </div>
+    </div> -->
     <PartsNotification v-show="setNotif" :message="notifMessage" />
     <div
       v-show="!hasFile"
@@ -293,6 +329,7 @@ onMounted(async () => {
       <div class="flex flex-col space-y-5">
         <div class="flex items-end justify-between border-gray-800">
           <button
+            @click="filing"
             class="b-file-newfile-button text-white flex space-x-2 w-fit items-center hover:bg-gray-800 rounded-full px-4 py-2"
           >
             <svg

@@ -118,6 +118,7 @@ function upload_file(file, metadata, link_metadata) {
                 // return navigateTo("/search");
                 // console.log(getStringAfter(link_metadata.f_del_ref, "hyphip_"));
                 unsetFileToLoad();
+                reset();
                 const url =
                   "/" + link_metadata.filetype + link_metadata.filetoken;
                 setTimeout(() => {
@@ -604,6 +605,7 @@ const file_to_load = useState("file_to_load", () => false);
 // });
 
 onMounted(() => {
+  reset();
   watch(file_to_load, async (newCheck, oldCheck) => {
     if (newCheck) {
       window.onbeforeunload = function () {
