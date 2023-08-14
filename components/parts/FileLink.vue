@@ -12,6 +12,28 @@ const wantFile = useState("wantFile", () => false);
 const divLeft = useState("divLeft", () => 0);
 const divTop = useState("divTop", () => 0);
 
+const touchTimeout = useState("touchTimeout", () => 0);
+
+function handleTouchStart(event) {
+  event.preventDefault();
+  touchTimeout.value = setTimeout(() => {
+    handleLongPress(event);
+  }, 300);
+}
+function handleTouchEnd(event) {
+  event.preventDefault();
+  clearTimeout(touchTimeout.value);
+}
+function handleTouchCancel(event) {
+  event.preventDefault();
+  clearTimeout(touchTimeout.value);
+}
+function handleLongPress(event) {
+  event.preventDefault();
+  moreContextmenu.value = false;
+  morePetit.value = true;
+}
+
 function handleClick(event) {
   moreContextmenu.value = false;
   more.value = !more.value;
@@ -425,6 +447,9 @@ onMounted(async () => {
             class="absolute transition duration-150 ease-in-out bg-main target-element"
           />
           <div
+            @touchstart="handleTouchStart"
+            @touchend="handleTouchEnd"
+            @touchcancel="handleTouchCancel"
             class="border-t border-gray-800 text-white sm:hidden flex flex-col space-y-1 text-xs hover:bg-gray-800 hover:cursor-pointer py-2.5 pl-4 pr-3"
           >
             <div class="flex items-center justify-between">
