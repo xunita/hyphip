@@ -793,11 +793,15 @@ onMounted(async () => {
               >Here is your PUBLIC link to the file, dont forget to save
               it.</span
             >
-            <div
-              class="border relative border-gray-800 rounded-lg p-5 overflow-x-scroll whitespace-nowrap text-sm"
-            >
-              <span class="text-gray-500">{{ getlinkOr() + getlinkMid() }}</span
-              ><span>{{ getlink() }}</span>
+            <div class="relative">
+              <div
+                class="border relative border-gray-800 rounded-lg p-5 overflow-x-scroll text-sm whitespace-nowrap"
+              >
+                <span class="text-gray-500">{{
+                  getlinkOr() + getlinkMid()
+                }}</span
+                ><span>{{ getlink() }}</span>
+              </div>
               <button
                 @focusout="copiedL = false"
                 @click="
@@ -844,11 +848,15 @@ onMounted(async () => {
               >Here is your PRIVATE link to edit the expiration date. Be
               careful, whoever got this link can edit the expiration date.</span
             >
-            <div
-              class="border relative border-gray-800 rounded-lg p-5 overflow-x-scroll whitespace-nowrap text-sm"
-            >
-              <span class="text-gray-500">{{ getlinkOr() + getlinkMid() }}</span
-              ><span>{{ getlinkPr() }}</span>
+            <div class="relative">
+              <div
+                class="border relative border-gray-800 rounded-lg p-5 overflow-x-scroll whitespace-nowrap text-sm"
+              >
+                <span class="text-gray-500">{{
+                  getlinkOr() + getlinkMid()
+                }}</span
+                ><span>{{ getlinkPr() }}</span>
+              </div>
               <button
                 @focusout="copiedT = false"
                 @click="
