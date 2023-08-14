@@ -789,8 +789,16 @@ onMounted(async () => {
       <div class="lg:w-2/4 md:5/6 w-full mx-auto">
         <div class="text-white flex flex-col space-y-10">
           <div class="flex flex-col space-y-3">
-            <span class="font-semibold text-xs text-gray-400"
+            <span
+              v-show="isToken"
+              class="font-semibold text-xs text-gray-400 text-center"
               >Here is your PUBLIC link to the file, dont forget to save
+              it.</span
+            >
+            <span
+              v-show="isLink"
+              class="font-semibold text-xs text-gray-400 text-center"
+              >The public link to the file, dont forget to save it or share
               it.</span
             >
             <div class="relative">
@@ -843,8 +851,8 @@ onMounted(async () => {
               </button>
             </div>
           </div>
-          <div class="flex flex-col space-y-3">
-            <span class="font-semibold text-xs text-gray-400"
+          <div v-show="isToken" class="flex flex-col space-y-3">
+            <span class="font-semibold text-xs text-gray-400 text-center"
               >Here is your PRIVATE link to edit the expiration date. Be
               careful, whoever got this link can edit the expiration date.</span
             >
