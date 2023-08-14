@@ -17,13 +17,13 @@ function deleteFile() {
     <div class="flex flex-col">
       <button
         @click="preview"
-        class="px-5 py-3 border-trasparent hover:border-gray-900 hover:bg-gray-900 flex items-center rounded-t-lg space-x-2"
+        class="px-3 py-2 border-trasparent hover:border-gray-900 hover:bg-gray-900 flex items-center rounded-t-lg space-x-2"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          class="w-6 h-6"
+          class="w-5 h-5"
         >
           <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
           <path
@@ -32,17 +32,17 @@ function deleteFile() {
             clip-rule="evenodd"
           />
         </svg>
-        <span class="font-semibold text-sm">Preview</span>
+        <span class="font-semibold text-xs">Preview</span>
       </button>
       <button
         @click="download"
-        class="px-5 py-3 border-trasparent hover:border-gray-900 hover:bg-gray-900 flex items-center space-x-2"
+        class="px-3 py-2 border-trasparent hover:border-gray-900 hover:bg-gray-900 flex items-center space-x-2"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          class="w-6 h-6"
+          class="w-5 h-5"
         >
           <path
             fill-rule="evenodd"
@@ -50,17 +50,17 @@ function deleteFile() {
             clip-rule="evenodd"
           />
         </svg>
-        <span class="font-semibold text-sm">Download</span>
+        <span class="font-semibold text-xs">Download</span>
       </button>
       <button
         @click="deleteFile"
-        class="px-5 py-3 border-trasparent hover:border-gray-900 hover:bg-gray-900 rounded-b-lg flex items-center space-x-2"
+        class="px-3 py-2 border-trasparent hover:border-gray-900 hover:bg-gray-900 rounded-b-lg flex items-center space-x-2"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          class="w-6 h-6"
+          class="w-5 h-5"
         >
           <path
             fill-rule="evenodd"
@@ -69,7 +69,7 @@ function deleteFile() {
           />
         </svg>
 
-        <span class="font-semibold text-sm">Delete</span>
+        <span class="font-semibold text-xs">Delete</span>
       </button>
     </div>
   </div>
