@@ -717,7 +717,7 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
           <div v-show="enable_fileupload_button" class="file-load-button">
             <button
               @click="getFile"
-              class="b-file-load-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-2"
+              class="b-file-load-button text-white flex space-x-2 items-center hover:bg-gray-800 border border-gray-800 rounded-full px-4 py-2"
             >
               <svg
                 class="h-6 w-6"
@@ -744,7 +744,7 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
           <div v-show="enable_savebutton" class="file-save-button">
             <button
               @click="savefile"
-              class="b-file-save-button text-white flex space-x-2 items-center hover:bg-gray-800 rounded-full px-4 py-2"
+              class="b-file-save-button text-white flex space-x-2 items-center border border-gray-800 hover:bg-gray-800 rounded-full px-4 py-2"
             >
               <svg
                 class="h-6 w-6"

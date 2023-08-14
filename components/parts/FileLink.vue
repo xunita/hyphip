@@ -3,13 +3,32 @@ const route = useRoute();
 const nuxtApp = useNuxtApp();
 
 const more = useState("more", () => false);
+const moreContextmenu = useState("moreContextmenu", () => false);
 const morePetit = useState("morePetit", () => false);
-
 const wantFile = useState("wantFile", () => false);
 
-function handleClick() {
+const divLeft = useState("divLeft", () => 0);
+const divTop = useState("divTop", () => 0);
+
+function handleClick(event) {
+  moreContextmenu.value = false;
   more.value = !more.value;
   morePetit.value = !morePetit.value;
+}
+
+function handleClickContextmenu(event) {
+  more.value = false;
+  event.preventDefault();
+  divTop.value = event.clientY;
+  divLeft.value = event.clientX;
+  if (moreContextmenu.value) {
+    moreContextmenu.value = false;
+    setTimeout(() => {
+      moreContextmenu.value = true;
+    }, 50);
+  } else {
+    moreContextmenu.value = true;
+  }
 }
 
 function nofiling() {
@@ -262,12 +281,17 @@ onMounted(async () => {
 
   const parent = document.getElementById("parent");
   const parentPetit = document.getElementById("parentPetit");
+  const contextmenu = document.getElementById("contextmenu");
   document.addEventListener("click", (event) => {
     if (event.target !== parent && !parent.contains(event.target)) {
       more.value = false;
     }
     if (event.target !== parentPetit && !parentPetit.contains(event.target)) {
       morePetit.value = false;
+    }
+
+    if (event.target !== contextmenu && !contextmenu.contains(event.target)) {
+      moreContextmenu.value = false;
     }
   });
 });
@@ -330,7 +354,7 @@ onMounted(async () => {
         <div class="flex items-end justify-between border-gray-800">
           <button
             @click="filing"
-            class="b-file-newfile-button text-white flex space-x-2 w-fit items-center hover:bg-gray-800 rounded-full px-4 py-2"
+            class="b-file-newfile-button text-white flex space-x-2 w-fit items-center hover:bg-gray-800 border border-gray-800 rounded-full px-4 py-2"
           >
             <svg
               class="h-5 w-5"
@@ -392,7 +416,14 @@ onMounted(async () => {
             </div>
           </div>
           <!-- -sm -->
+          <PartsFileDropDown
+            id="contextmenu"
+            v-show="moreContextmenu"
+            :style="{ top: divTop + 'px', left: divLeft + 'px' }"
+            class="absolute transition duration-150 ease-in-out bg-main target-element"
+          />
           <div
+            @mousedown="handleClickContextmenu"
             class="border-t border-gray-800 text-white sm:hidden flex flex-col space-y-1 text-xs hover:bg-gray-800 hover:cursor-pointer py-2.5 pl-4 pr-3"
           >
             <div class="flex items-center justify-between">
@@ -538,6 +569,7 @@ onMounted(async () => {
           </div>
           <!-- +sm -->
           <div
+            @contextmenu="handleClickContextmenu"
             class="border-t border-gray-800 text-white sm:flex hidden relative text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2.5 items-center"
           >
             <div id="parent" class="absolute right-2">
