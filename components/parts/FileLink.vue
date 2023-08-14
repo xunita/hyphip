@@ -25,7 +25,8 @@ function handleTouchEnd() {
 function handleTouchCancel() {
   clearTimeout(touchTimeout.value);
 }
-function handleLongPress() {
+function handleLongPress(event) {
+  event.preventDefault();
   moreContextmenu.value = false;
   morePetit.value = true;
 }
@@ -446,7 +447,8 @@ onMounted(async () => {
             @touchstart="handleTouchStart"
             @touchend="handleTouchEnd"
             @touchcancel="handleTouchCancel"
-            class="border-t border-gray-800 text-white sm:hidden flex flex-col space-y-1 text-xs hover:bg-gray-800 hover:cursor-pointer py-2.5 pl-4 pr-3"
+            :class="{ 'hover:bg-gray-800': morePetit }"
+            class="border-t border-gray-800 text-white sm:hidden flex flex-col space-y-1 text-xs hover:cursor-pointer py-2.5 pl-4 pr-3"
           >
             <div class="flex items-center justify-between">
               <div :title="file?.file_metadata.name" class="w-5/6">
