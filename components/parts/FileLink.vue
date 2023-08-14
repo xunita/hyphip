@@ -15,21 +15,17 @@ const divTop = useState("divTop", () => 0);
 const touchTimeout = useState("touchTimeout", () => 0);
 
 function handleTouchStart(event) {
-  event.preventDefault();
   touchTimeout.value = setTimeout(() => {
     handleLongPress(event);
   }, 300);
 }
-function handleTouchEnd(event) {
-  event.preventDefault();
+function handleTouchEnd() {
   clearTimeout(touchTimeout.value);
 }
-function handleTouchCancel(event) {
-  event.preventDefault();
+function handleTouchCancel() {
   clearTimeout(touchTimeout.value);
 }
-function handleLongPress(event) {
-  event.preventDefault();
+function handleLongPress() {
   moreContextmenu.value = false;
   morePetit.value = true;
 }
