@@ -3,33 +3,14 @@ const route = useRoute();
 const nuxtApp = useNuxtApp();
 
 const more = useState("more", () => false);
+const hovered = useState("hovered", () => false);
+
 const moreContextmenu = useState("moreContextmenu", () => false);
 const morePetit = useState("morePetit", () => false);
 const wantFile = useState("wantFile", () => false);
 
 const divLeft = useState("divLeft", () => 0);
 const divTop = useState("divTop", () => 0);
-
-const longPressThreshold = useState("longPressThreshold", () => 500);
-const touchStartTime = useState("touchStartTime", () => 0);
-const touchTimeout = useState("touchTimeout", () => 0);
-
-function handleTouchEnd() {
-  clearTimeout(touchTimeout.value);
-}
-function handleTouchCancel() {
-  clearTimeout(touchTimeout.value);
-}
-function handleLongPress(event) {
-  handleClickContextmenu(event);
-}
-
-function handleTouchStart(event) {
-  touchStartTime.value = new Date().getTime();
-  touchTimeout.value = setTimeout(() => {
-    handleLongPress(event);
-  }, longPressThreshold.value);
-}
 
 function handleClick(event) {
   moreContextmenu.value = false;
@@ -444,9 +425,6 @@ onMounted(async () => {
             class="absolute transition duration-150 ease-in-out bg-main target-element"
           />
           <div
-            @touchstart="handleTouchStart"
-            @touchend="handleTouchEnd"
-            @touchcancel="handleTouchCancel"
             class="border-t border-gray-800 text-white sm:hidden flex flex-col space-y-1 text-xs hover:bg-gray-800 hover:cursor-pointer py-2.5 pl-4 pr-3"
           >
             <div class="flex items-center justify-between">
@@ -593,15 +571,17 @@ onMounted(async () => {
           <!-- +sm -->
           <div
             @contextmenu="handleClickContextmenu"
+            @mouseover="hovered = true"
+            @mouseleave="hovered = false"
             class="border-t border-gray-800 text-white sm:flex hidden relative text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2.5 items-center"
           >
-            <div id="parent" class="absolute right-2">
+            <div v-show="hovered || more" id="parent" class="absolute right-2">
               <button
                 @click="handleClick"
-                class="rounded-full hover:bg-gray-700 p-1 opacity-75 target-element"
+                class="rounded-full hover:bg-gray-700 p-1 hover:bg-gray-700/75 target-element"
               >
                 <svg
-                  class="text-white h-5 w-5 font-semibold"
+                  class="text-white h-5 w-5 font-bold"
                   aria-hidden="true"
                   fill="none"
                   stroke="currentColor"
