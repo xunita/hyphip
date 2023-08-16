@@ -1074,10 +1074,10 @@ onMounted(async () => {
               </button>
             </div>
           </div>
-          <div class="flex flex-col space-y-3">
+          <div v-show="isToken" class="flex flex-col space-y-3">
             <span class="font-semibold text-xs text-gray-400 text-center"
-              >Here is a public link to the file. Whoever got this link can
-              preview or download the file.</span
+              >Here is another public link to the file. Whoever got this link
+              can download the file.</span
             >
             <div class="relative">
               <div
