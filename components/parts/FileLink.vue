@@ -1,5 +1,23 @@
 <script setup lang="ts">
 const previewed = useState("previewed", () => false);
+const renaming = useState("renaming", () => false);
+const deleting = useState("deleting", () => false);
+const newname = useState("newname", () => "");
+function getFileNameWithoutExtension(fullFileName) {
+  const fileNameWithExtension = fullFileName.split("\\").pop().split("/").pop(); // Get the file name from the full path
+  const fileNameWithoutExtension = fileNameWithExtension
+    .split(".")
+    .slice(0, -1)
+    .join("."); // Remove extension
+  return fileNameWithoutExtension;
+}
+function getFileExtension(fileName) {
+  const lastDotIndex = fileName.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return ""; // File name has no extension
+  }
+  return "." + fileName.slice(lastDotIndex + 1).toLowerCase();
+}
 function action(action) {
   more.value = false;
   moreContextmenu.value = false;
@@ -10,35 +28,30 @@ function action(action) {
   else if (action === "rename") tryRename();
   else tryDelete();
 }
+function toggleOverflow() {
+  const body = document.querySelector("body");
+  if (body) {
+    body.style.overflowY = "hidden";
+  }
+}
 
+function untoggleOverflow() {
+  const body = document.querySelector("body");
+  if (body) {
+    body.style.overflowY = "auto";
+  }
+}
 function tryPreview() {
   previewed.value = !previewed.value;
 }
 
 function downloadFileUsingLink(fileUrl, fileName) {
-  fetch(fileUrl)
-    .then((response) => response.blob())
-    .then((blob) => {
-      // Create a temporary link element
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = fileName;
-
-      // Trigger a click event on the link
-      const clickEvent = new MouseEvent("click", {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-      });
-
-      link.dispatchEvent(clickEvent);
-
-      // Clean up the temporary URL object
-      URL.revokeObjectURL(link.href);
-    })
-    .catch((error) => {
-      console.error("Error downloading the file:", error);
-    });
+  const link = document.createElement("a");
+  link.href = fileUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 function tryDownload() {
   try {
@@ -54,8 +67,58 @@ function tryDownload() {
     });
   }
 }
-function tryRename() {}
-function tryDelete() {}
+function tryRename() {
+  try {
+    renaming.value = true;
+    newname.value = getFileNameWithoutExtension(file.value.file_metadata.name);
+    toggleOverflow();
+  } catch (error) {
+    renaming.value = false;
+  }
+}
+
+async function updateName(name) {
+  if (
+    name + getFileExtension(file.value.file_metadata.name) !==
+    file.value.file_metadata.name
+  ) {
+    try {
+      const db = nuxtApp.$firestore;
+      const nametochange =
+        name + getFileExtension(file.value.file_metadata.name);
+      const linkRef = nuxtApp.$fireDoc(db, "links", file.value.filetoken);
+      await nuxtApp.$fireUpdateDoc(linkRef, {
+        file_metadata: {
+          lastmodified: file.value.file_metadata.lastmodified,
+          name: nametochange,
+          size: file.value.file_metadata.size,
+          type: file.value.file_metadata.type,
+        },
+      });
+      file.value.file_metadata.name = nametochange;
+      notify("Name updated successfully. New name: " + nametochange);
+      untoggleOverflow();
+      renaming.value = false;
+    } catch (error) {
+      notify("Oops, something wrong happened, try again or reload the page");
+      renaming.value = false;
+    }
+  } else {
+    notify("File name has not changed");
+    renaming.value = false;
+  }
+}
+
+function tryDelete() {
+  try {
+  } catch (error) {
+    notify("Oops, something wrong happened, try again or reload the page");
+    showError({
+      statusCode: 500,
+      statusMessage: "Failed to delete the file",
+    });
+  }
+}
 
 const route = useRoute();
 const nuxtApp = useNuxtApp();
@@ -419,6 +482,50 @@ onMounted(async () => {
 </script>
 <template>
   <div>
+    <div
+      v-show="renaming"
+      class="fixed z-20 text-white w-full h-full top-0 left-0 bg-black bg-black/75 cursor-default"
+    >
+      <div class="mx-auto lg:w-2/6 md:w-2/3 min-h-screen px-6 relative top-80">
+        <div>
+          <div
+            class="border border-gray-500 px-8 pt-8 pb-4 bg-main rounded-lg flex flex-col space-y-5"
+          >
+            <input
+              id="myInput"
+              @keydown="updateName(newname)"
+              autofocus
+              type="text"
+              v-model="newname"
+              class="bg-gray-900 px-4 py-2 rounded-lg border border-gray-600"
+            />
+            <div class="flex items-center space-x-5 justify-end">
+              <button
+                @click="
+                  renaming = false;
+                  untoggleOverflow();
+                "
+                class="b-file-cancel-button text-white flex space-x-2 items-center hover:bg-gray-900 rounded px-6 py-1.5"
+              >
+                <span
+                  class="inline sm:text-sm text-xs font-semibold break-words"
+                  >Cancel</span
+                >
+              </button>
+              <button
+                @click="updateName(newname)"
+                class="b-file-delete-button text-white flex space-x-2 items-center bg-blue-500 hover:bg-blue-600 rounded px-6 py-1.5"
+              >
+                <span
+                  class="inline sm:text-sm text-xs font-semibold break-words"
+                  >Rename</span
+                >
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <PartsPreview v-if="previewed" />
     <!-- <div
       v-show="wantFile"
