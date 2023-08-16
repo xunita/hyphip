@@ -1,9 +1,68 @@
 <script setup lang="ts">
-import { text } from "stream/consumers";
+const previewed = useState("previewed", () => false);
+function action(action) {
+  more.value = false;
+  moreContextmenu.value = false;
+  morePetit.value = false;
+
+  if (action === "preview") tryPreview();
+  else if (action === "download") tryDownload();
+  else if (action === "rename") tryRename();
+  else tryDelete();
+}
+
+function tryPreview() {
+  previewed.value = !previewed.value;
+}
+
+function downloadFileUsingLink(fileUrl, fileName) {
+  fetch(fileUrl)
+    .then((response) => response.blob())
+    .then((blob) => {
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+
+      // Trigger a click event on the link
+      const clickEvent = new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      link.dispatchEvent(clickEvent);
+
+      // Clean up the temporary URL object
+      URL.revokeObjectURL(link.href);
+    })
+    .catch((error) => {
+      console.error("Error downloading the file:", error);
+    });
+}
+function tryDownload() {
+  try {
+    downloadFileUsingLink(
+      file.value.filelocation,
+      file.value.file_metadata.name
+    );
+  } catch (error) {
+    // console.log(error);
+    showError({
+      statusCode: 500,
+      statusMessage: "Failed to download file",
+    });
+  }
+}
+function tryRename() {}
+function tryDelete() {}
 
 const route = useRoute();
 const nuxtApp = useNuxtApp();
 
+const type = useState("type", () => "hyphip");
+
+const copiedP = useState("copiedP", () => false);
 const copiedT = useState("copiedT", () => false);
 const copiedL = useState("copiedL", () => false);
 
@@ -23,11 +82,13 @@ async function copyToClipboard(message, tOrL) {
   try {
     await navigator.clipboard.writeText(message);
     if (tOrL === "T") copiedT.value = true;
-    else copiedL.value = true;
+    else if (tOrL === "L") copiedL.value = true;
+    else copiedP.value = true;
     console.log("Text copied to clipboard:", message);
   } catch (error) {
     if (tOrL === "T") copiedT.value = false;
-    else copiedL.value = false;
+    else if (tOrL === "L") copiedL.value = false;
+    else copiedP.value = false;
     showError({
       statusCode: 500,
       statusMessage: "Failed to copy text to clipboard",
@@ -305,6 +366,7 @@ async function getFile() {
         if (file.value.filetype !== route.params.filetype + "/") {
           showError({ statusCode: 404, statusMessage: "File Not Found" });
         } else {
+          type.value = "token";
           setHasFile();
           setIsToken();
         }
@@ -322,6 +384,7 @@ async function getFile() {
         file.value = doc.data();
       });
       if (file.value !== null) {
+        type.value = "link";
         setHasFile();
         setIsLink();
       } else {
@@ -356,6 +419,7 @@ onMounted(async () => {
 </script>
 <template>
   <div>
+    <PartsPreview v-if="previewed" />
     <!-- <div
       v-show="wantFile"
       class="fixed top-0 left-0 bg-black/90 z-10 w-full h-full"
@@ -476,7 +540,10 @@ onMounted(async () => {
           <!-- -sm -->
           <PartsFileDropDown
             id="contextmenu"
+            @action="action"
             v-show="moreContextmenu"
+            :file="file"
+            :type="type"
             :style="{ top: divTop + 'px', left: divLeft + 'px' }"
             class="absolute transition duration-150 ease-in-out bg-main target-element"
           />
@@ -564,7 +631,10 @@ onMounted(async () => {
                   </svg>
                 </button>
                 <PartsFileDropDown
+                  @action="action"
                   v-show="morePetit"
+                  :file="file"
+                  :type="type"
                   class="absolute transition duration-150 ease-in-out right-0 bg-main target-element"
                 />
               </div>
@@ -633,6 +703,7 @@ onMounted(async () => {
             @contextmenu="handleClickContextmenu"
             @mouseover="hovered = true"
             @mouseleave="hovered = false"
+            :class="{ 'bg-gray-800': more || moreContextmenu }"
             class="border-t border-gray-800 text-white sm:flex hidden relative text-xs font-semibold hover:bg-gray-800 hover:cursor-pointer py-2.5 items-center"
           >
             <div v-show="hovered || more" id="parent" class="absolute right-2">
@@ -657,7 +728,10 @@ onMounted(async () => {
                 </svg>
               </button>
               <PartsFileDropDown
+                @action="action"
                 v-show="more"
+                :file="file"
+                :type="type"
                 class="absolute transition duration-150 ease-in-out right-0 bg-main target-element"
               />
             </div>
@@ -789,36 +863,23 @@ onMounted(async () => {
       <div class="lg:w-2/4 md:5/6 w-full mx-auto">
         <div class="text-white flex flex-col space-y-10">
           <div class="flex flex-col space-y-3">
-            <span
-              v-show="isToken"
-              class="font-semibold text-xs text-gray-400 text-center"
-              >Here is your PUBLIC link to the file, dont forget to save
-              it.</span
-            >
-            <span
-              v-show="isLink"
-              class="font-semibold text-xs text-gray-400 text-center"
-              >The public link to the file, dont forget to save it or share
-              it.</span
+            <span class="font-semibold text-xs text-gray-400 text-center"
+              >This is a link to the file, dont forget to save it, share it or
+              embed it in a html tag.</span
             >
             <div class="relative">
               <div
                 class="border relative border-gray-800 rounded-lg p-5 overflow-x-scroll text-sm whitespace-nowrap"
               >
-                <span class="text-gray-500">{{
-                  getlinkOr() + getlinkMid()
-                }}</span
-                ><span>{{ getlink() }}</span>
+                <span class="text-gray-300">{{ file.filelocation }}</span>
               </div>
               <button
-                @focusout="copiedL = false"
-                @click="
-                  copyToClipboard(getlinkOr() + getlinkMid() + getlink(), 'L')
-                "
+                @focusout="copiedP = false"
+                @click="copyToClipboard(file.filelocation, 'P')"
                 class="absolute bottom-1.5 right-1.5 p-1.5 rounded-lg bg-gray-900 focus:bg-gray-900 focus:ring"
               >
                 <svg
-                  v-show="copiedL"
+                  v-show="copiedP"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -834,7 +895,7 @@ onMounted(async () => {
                 </svg>
 
                 <svg
-                  v-show="!copiedL"
+                  v-show="!copiedP"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -854,16 +915,16 @@ onMounted(async () => {
           <div v-show="isToken" class="flex flex-col space-y-3">
             <span class="font-semibold text-xs text-gray-400 text-center"
               >Here is your PRIVATE link to edit the expiration date. Be
-              careful, whoever got this link can edit the expiration date.</span
+              careful, whoever got this link can edit the expiration date and
+              delete the file.</span
             >
             <div class="relative">
               <div
                 class="border relative border-gray-800 rounded-lg p-5 overflow-x-scroll whitespace-nowrap text-sm"
               >
-                <span class="text-gray-500">{{
-                  getlinkOr() + getlinkMid()
-                }}</span
-                ><span>{{ getlinkPr() }}</span>
+                <span class="text-gray-300">{{
+                  getlinkOr() + getlinkMid() + getlinkPr()
+                }}</span>
               </div>
               <button
                 @focusout="copiedT = false"
@@ -890,6 +951,60 @@ onMounted(async () => {
 
                 <svg
                   v-show="!copiedT"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-5 h-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="flex flex-col space-y-3">
+            <span class="font-semibold text-xs text-gray-400 text-center"
+              >Here is a public link to the file. Whoever got this link can
+              preview or download the file.</span
+            >
+            <div class="relative">
+              <div
+                class="border relative border-gray-800 rounded-lg p-5 overflow-x-scroll text-sm whitespace-nowrap"
+              >
+                <span class="text-gray-300">{{
+                  getlinkOr() + getlinkMid() + getlink()
+                }}</span>
+              </div>
+              <button
+                @focusout="copiedL = false"
+                @click="
+                  copyToClipboard(getlinkOr() + getlinkMid() + getlink(), 'L')
+                "
+                class="absolute bottom-1.5 right-1.5 p-1.5 rounded-lg bg-gray-900 focus:bg-gray-900 focus:ring"
+              >
+                <svg
+                  v-show="copiedL"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-5 h-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75"
+                  />
+                </svg>
+
+                <svg
+                  v-show="!copiedL"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
