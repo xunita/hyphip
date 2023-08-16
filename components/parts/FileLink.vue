@@ -493,7 +493,7 @@ onMounted(async () => {
           >
             <input
               id="myInput"
-              @keydown="updateName(newname)"
+              @keydown.enter="updateName(newname)"
               autofocus
               type="text"
               v-model="newname"
