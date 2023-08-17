@@ -526,9 +526,6 @@ async function getFile() {
         } else {
           await checkfileExistence();
           if (fileExist.value) {
-            console.log(
-              created_at + "  set for deletion  " + file.value.deadline
-            );
             if (created_at >= file.value.deadline) {
               executeDeletion(file.value.filetype + file.value.f_del_ref);
             } else {
