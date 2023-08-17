@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useHead({
-  title: "Error, oops something bad happens - Hyphip",
+  title: "Error, oops something bad happened - Hyphip",
   meta: [{ name: "description", content: "Any error leads to this page" }],
 });
 const props = defineProps({

@@ -12,12 +12,14 @@ import {
   where,
   getDocs,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import {
   getStorage,
   ref as fireref,
   uploadBytesResumable,
   getDownloadURL,
+  deleteObject,
 } from "firebase/storage";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -85,4 +87,10 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   nuxtApp.vueApp.provide("fireUpdateDoc ", updateDoc);
   nuxtApp.provide("fireUpdateDoc", updateDoc);
+
+  nuxtApp.vueApp.provide("fireDeleteDoc ", deleteDoc);
+  nuxtApp.provide("fireDeleteDoc", deleteDoc);
+
+  nuxtApp.vueApp.provide("fireDeleteFile ", deleteObject);
+  nuxtApp.provide("fireDeleteFile", deleteObject);
 });

@@ -25,6 +25,12 @@ function addMonthsToTimestamp(timestamp, monthsToAdd) {
 
   return newTimestamp;
 }
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function getDateTimeFromTimestamp(timestamp) {
   // Create a new Date object with the provided timestamp
   const date = new Date(timestamp * 1000);
@@ -89,51 +95,59 @@ function upload_file(file, metadata, link_metadata) {
       () => {
         // Handle successful uploads on complete
         // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-        nuxtApp.$getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          // Create our initial doc
-          try {
-            const db = nuxtApp.$firestore;
-            const doc = nuxtApp.$fireDoc;
-            const setDoc = nuxtApp.$fireSetDoc;
-            const created_at = +Date.now().toString() / 1000;
+        nuxtApp
+          .$getDownloadURL(uploadTask.snapshot.ref)
+          .then(async (downloadURL) => {
+            // console.log(fileRef);
+            // await delay(10000);
+            // Create our initial doc
+            try {
+              const db = nuxtApp.$firestore;
+              const doc = nuxtApp.$fireDoc;
+              const setDoc = nuxtApp.$fireSetDoc;
+              const created_at = +Date.now().toString() / 1000;
 
-            setDoc(doc(db, "links", link_metadata.filetoken), {
-              uploaded_at: created_at,
-              created_at: created_at,
-              deadline: addMonthsToTimestamp(+created_at, 3),
-              filelocation: downloadURL,
-              filetoken: link_metadata.filetoken,
-              filetype: link_metadata.filetype,
-              fileref: link_metadata.filetype + uniqueFileName,
-              f_del_ref: link_metadata.f_del_ref,
-              link: link_metadata.link,
-              file_metadata: metadata,
-            })
-              .then(() => {
-                setProgressLevel(100);
-                setTimeout(() => {
-                  unsetLoadSave();
-                  resetProgress();
-                }, 500);
-                // return navigateTo("/search");
-                // console.log(getStringAfter(link_metadata.f_del_ref, "hyphip_"));
-                unsetFileToLoad();
-                reset();
-                const url =
-                  "/" + link_metadata.filetype + link_metadata.filetoken;
-                setTimeout(() => {
-                  window.location.assign(url);
-                }, 0);
+              setDoc(doc(db, "links", link_metadata.filetoken), {
+                uploaded_at: created_at,
+                created_at: created_at,
+                deadline: addMonthsToTimestamp(+created_at, 3),
+                filelocation: downloadURL,
+                filetoken: link_metadata.filetoken,
+                filetype: link_metadata.filetype,
+                fileref: link_metadata.filetype + uniqueFileName,
+                f_del_ref: link_metadata.f_del_ref,
+                link: link_metadata.link,
+                file_metadata: metadata,
               })
-              .catch((error) => {
-                unsetLoadSave();
-                setHasError();
-              });
-          } catch (error) {
+                .then(() => {
+                  setProgressLevel(100);
+                  setTimeout(() => {
+                    unsetLoadSave();
+                    resetProgress();
+                  }, 500);
+                  // return navigateTo("/search");
+                  // console.log(getStringAfter(link_metadata.f_del_ref, "hyphip_"));
+                  unsetFileToLoad();
+                  reset();
+                  const url =
+                    "/" + link_metadata.filetype + link_metadata.filetoken;
+                  setTimeout(() => {
+                    window.location.assign(url);
+                  }, 0);
+                })
+                .catch((error) => {
+                  unsetLoadSave();
+                  setHasError();
+                });
+            } catch (error) {
+              unsetLoadSave();
+              setHasError();
+            }
+          })
+          .catch((err) => {
             unsetLoadSave();
             setHasError();
-          }
-        });
+          });
       }
     );
   } catch (error) {

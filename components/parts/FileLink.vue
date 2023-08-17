@@ -1,8 +1,15 @@
 <script setup lang="ts">
+const fileExist = useState("fileExist", () => false);
+
 const previewed = useState("previewed", () => false);
 const renaming = useState("renaming", () => false);
+
 const deleting = useState("deleting", () => false);
+
 const newname = useState("newname", () => "");
+function showConfirmation(message) {
+  return confirm(message);
+}
 function getFileNameWithoutExtension(fullFileName) {
   const fileNameWithExtension = fullFileName.split("\\").pop().split("/").pop(); // Get the file name from the full path
   const fileNameWithoutExtension = fileNameWithExtension
@@ -87,7 +94,9 @@ async function updateName(name) {
       const nametochange =
         name + getFileExtension(file.value.file_metadata.name);
       const linkRef = nuxtApp.$fireDoc(db, "links", file.value.filetoken);
+      const created_at = +Date.now().toString() / 1000;
       await nuxtApp.$fireUpdateDoc(linkRef, {
+        created_at: created_at,
         file_metadata: {
           lastmodified: file.value.file_metadata.lastmodified,
           name: nametochange,
@@ -96,6 +105,7 @@ async function updateName(name) {
         },
       });
       file.value.file_metadata.name = nametochange;
+      file.value.created_at = created_at;
       notify("Name updated successfully. New name: " + nametochange);
       untoggleOverflow();
       renaming.value = false;
@@ -109,9 +119,77 @@ async function updateName(name) {
   }
 }
 
+async function checkfileExistence() {
+  try {
+    const storage = nuxtApp.$firestorage;
+    const fileRef = nuxtApp.$fireref(
+      storage,
+      file.value.filetype + file.value.f_del_ref
+    );
+
+    await nuxtApp
+      .$getDownloadURL(fileRef)
+      .then(async (downloadURL) => {
+        fileExist.value = true;
+      })
+      .catch((err) => {
+        fileExist.value = false;
+      });
+  } catch (error) {
+    fileExist.value = false;
+    showError({
+      statusCode: 500,
+      statusMessage: "Failed to locate the file",
+    });
+  }
+}
+
+function executeDeletion(reff) {
+  try {
+    const db = nuxtApp.$firestore;
+    const doc = nuxtApp.$fireDoc;
+    const storage = nuxtApp.$firestorage;
+    const fileRef = nuxtApp.$fireref(storage, reff);
+    nuxtApp
+      .$fireDeleteFile(fileRef)
+      .then(async () => {
+        await nuxtApp.$fireDeleteDoc(doc(db, "links", file.value.filetoken));
+        notify("File deleted successfully");
+        setTimeout(() => {
+          deleting.value = false;
+          window.location.assign("/");
+        }, 1500);
+      })
+      .catch((error) => {
+        deleting.value = false;
+        showError({
+          statusCode: 500,
+          statusMessage: "Failed to delete the file",
+        });
+        // Uh-oh, an error occurred!
+      });
+  } catch (error) {
+    deleting.value = false;
+    showError({
+      statusCode: 500,
+      statusMessage: "Failed to delete the file",
+    });
+  }
+}
+
 function tryDelete() {
   try {
+    const userConfirmed = showConfirmation(
+      "Are you sure you want to delete this file?"
+    );
+    if (userConfirmed) {
+      deleting.value = true;
+      executeDeletion(file.value.filetype + file.value.f_del_ref);
+    } else {
+      console.log("File deletion canceled");
+    }
   } catch (error) {
+    deleting.value = false;
     notify("Oops, something wrong happened, try again or reload the page");
     showError({
       statusCode: 500,
@@ -410,6 +488,19 @@ function unsetIsToken() {
   isToken.value = false;
 }
 
+async function deleteLink() {
+  try {
+    const db = nuxtApp.$firestore;
+    const doc = nuxtApp.$fireDoc;
+    await nuxtApp.$fireDeleteDoc(doc(db, "links", file.value.filetoken));
+  } catch (error) {
+    showError({
+      statusCode: 500,
+      statusMessage: "Failed to delete the file",
+    });
+  }
+}
+
 function setIsLink() {
   isLink.value = true;
 }
@@ -429,9 +520,15 @@ async function getFile() {
         if (file.value.filetype !== route.params.filetype + "/") {
           showError({ statusCode: 404, statusMessage: "File Not Found" });
         } else {
-          type.value = "token";
-          setHasFile();
-          setIsToken();
+          await checkfileExistence();
+          if (fileExist.value) {
+            type.value = "token";
+            setHasFile();
+            setIsToken();
+          } else {
+            deleteLink();
+            showError({ statusCode: 404, statusMessage: "File Not Found" });
+          }
         }
       } else showError({ statusCode: 404, statusMessage: "File Not Found" });
     } else {
@@ -447,9 +544,15 @@ async function getFile() {
         file.value = doc.data();
       });
       if (file.value !== null) {
-        type.value = "link";
-        setHasFile();
-        setIsLink();
+        await checkfileExistence();
+        if (fileExist.value) {
+          type.value = "link";
+          setHasFile();
+          setIsLink();
+        } else {
+          deleteLink();
+          showError({ statusCode: 404, statusMessage: "File Not Found" });
+        }
       } else {
         showError({ statusCode: 404, statusMessage: "File Not Found" });
       }
@@ -461,7 +564,7 @@ async function getFile() {
 onMounted(async () => {
   // document.addEventListener("click", handleClicked);
   await getFile();
-  setUpDate(file.value.uploaded_at);
+  if (file.value !== null) setUpDate(file.value.uploaded_at);
 
   const parent = document.getElementById("parent");
   const parentPetit = document.getElementById("parentPetit");
@@ -482,6 +585,10 @@ onMounted(async () => {
 </script>
 <template>
   <div>
+    <div
+      v-show="deleting"
+      class="fixed top-0 left-0 w-full h-full bg-gray-400 bg-gray-400/25 z-20"
+    ></div>
     <div
       v-show="renaming"
       class="fixed z-20 text-white w-full h-full top-0 left-0 bg-black bg-black/75 cursor-default"
