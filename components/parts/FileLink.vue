@@ -330,8 +330,11 @@ function setUpDate(timestamp) {
 
   // Set the minimum and maximum date
   const today = new Date();
+
   const maxDate = new Date(timestamp * 1000); // Date that can be max out
   maxDate.setMonth(maxDate.getMonth() + 6); // Set maximum date to 6 months from maxDate
+  const offsetMinutes = today.getTimezoneOffset();
+  today.setMinutes(today.getMinutes() - offsetMinutes);
 
   datePicker.min = today.toISOString().split("T")[0];
   datePickerPetit.min = today.toISOString().split("T")[0];
@@ -510,6 +513,7 @@ function unsetIsLink() {
 
 async function getFile() {
   try {
+    const created_at = +Date.now().toString() / 1000;
     const db = nuxtApp.$firestore;
     const docRef = nuxtApp.$fireDoc(db, "links", route.params.tokenfile);
     const docSnap = await nuxtApp.$fireGetDoc(docRef);
@@ -522,9 +526,16 @@ async function getFile() {
         } else {
           await checkfileExistence();
           if (fileExist.value) {
-            type.value = "token";
-            setHasFile();
-            setIsToken();
+            console.log(
+              created_at + "  set for deletion  " + file.value.deadline
+            );
+            if (created_at >= file.value.deadline) {
+              executeDeletion(file.value.filetype + file.value.f_del_ref);
+            } else {
+              type.value = "token";
+              setHasFile();
+              setIsToken();
+            }
           } else {
             deleteLink();
             showError({ statusCode: 404, statusMessage: "File Not Found" });
@@ -546,9 +557,13 @@ async function getFile() {
       if (file.value !== null) {
         await checkfileExistence();
         if (fileExist.value) {
-          type.value = "link";
-          setHasFile();
-          setIsLink();
+          if (created_at >= file.value.deadline) {
+            executeDeletion(file.value.filetype + file.value.f_del_ref);
+          } else {
+            type.value = "link";
+            setHasFile();
+            setIsLink();
+          }
         } else {
           deleteLink();
           showError({ statusCode: 404, statusMessage: "File Not Found" });
