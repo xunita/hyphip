@@ -156,9 +156,8 @@ function executeDeletion(reff) {
         await nuxtApp.$fireDeleteDoc(doc(db, "links", file.value.filetoken));
         notify("File deleted successfully");
         setTimeout(() => {
-          deleting.value = false;
           window.location.assign("/");
-        }, 1500);
+        }, 1000);
       })
       .catch((error) => {
         deleting.value = false;
