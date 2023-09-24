@@ -1,4 +1,4 @@
-#Too lazy to write a readme content, meanwhile, below is the default readme
+# Too lazy to write a readme content, meanwhile, below is the default readme
 
 Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
