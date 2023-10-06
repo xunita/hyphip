@@ -683,7 +683,11 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
 <template>
   <div>
     <div>
-      <div class="relative text-white">
+      <div 
+        @dragleave.prevent="disableDragDiv"
+        @dragenter.prevent="enableDragDiv"
+        @dragover.prevent="enableDragDiv"
+        class="relative text-white">
         <div
           @drop.prevent="onDrop"
           @dragleave.prevent="disableDragDiv"
