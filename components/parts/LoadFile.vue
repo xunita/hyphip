@@ -684,7 +684,6 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
   <div>
     <div>
       <div 
-        @dragleave.prevent="disableDragDiv"
         @dragenter.prevent="enableDragDiv"
         @dragover.prevent="enableDragDiv"
         class="relative text-white">
@@ -694,7 +693,7 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
           @dragenter.prevent="enableDragDiv"
           @dragover.prevent="enableDragDiv"
           v-show="enable_filedrop_area"
-          class="absolute flex flex-col justify-center rounded w-full h-full absolute bg-slate-700"
+          class="absolute flex flex-col justify-center rounded w-full h-full absolute bg-slate-700 z-10"
         >
           <span class="text-2xl text-center font-semibold">Drop your file</span>
         </div>
