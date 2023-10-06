@@ -1,5 +1,5 @@
 <template>
-  <div class="border-b z-10 border-gray-800 sticky top-0 bg-main">
+  <div class="border-b z-50 border-gray-800 sticky top-0 bg-main">
     <nav class="py-3 sm:px-16 px-6 flex justify-between items-center">
       <div class="logo">
         <a href="/" alt="Hyphip logo" class="flex items-center space-x-1"
