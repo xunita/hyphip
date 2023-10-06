@@ -3,7 +3,7 @@ const year = useState("year", () => new Date().getFullYear().toString());
 </script>
 <template>
   <div
-    class="bg-main z-10 border-t border-gray-800 py-4 sm:px-16 px-4 flex justify-center"
+    class="bg-main z-50 border-t border-gray-800 py-4 sm:px-16 px-4 flex justify-center"
   >
     <div
       class="footer-div flex items-centers space-x-4 text-white font-semibold text-xs"
