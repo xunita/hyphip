@@ -715,7 +715,7 @@ const file_loading_or_saving = useState("file_loading_or_saving", () => false);
         <div
           @dragenter.prevent="enableDragDiv"
           @dragover.prevent="enableDragDiv"
-          class="load-file-div border border-gray-800 rounded lg:px-20 md:px-16 px-8 py-6 flex flex-col justify-items-center items-center space-y-3.5"
+          class="load-file-div border border-gray-800 rounded lg:px-20 md:px-16 px-8 py-6 flex flex-col justify-items-center items-center space-y-3.5 relative z-10"
         >
           <h1 class="font-bold text-2xl">Link your file</h1>
           <span class="inline text-center break-words text-sm"
