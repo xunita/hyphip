@@ -319,6 +319,7 @@ function getFileType(fileName) {
   const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "svg"];
   const videoExtensions = ["mp4", "avi", "wmv", "mov"];
   const pdfExtension = "pdf";
+  const subtitleExtension = "srt";
 
   const fileExtension = fileName.split(".").pop().toLowerCase();
 
@@ -328,14 +329,14 @@ function getFileType(fileName) {
     return "videos/";
   } else if (fileExtension === pdfExtension) {
     return "pdfs/";
-  } else {
-    return "unknown";
+  } else if(fileExtension === subtitleExtension) {
+    return "srts/";
   }
 }
 
 function isExtensionAllowed(theFile) {
   const allowedExtensions =
-    /\.(jpg|jpeg|png|gif|bmp|svg|mp4|avi|wmv|mov|pdf)$/i;
+    /\.(jpg|jpeg|png|gif|bmp|svg|mp4|avi|wmv|mov|pdf|srt)$/i;
   return allowedExtensions.test(theFile.name);
 }
 
