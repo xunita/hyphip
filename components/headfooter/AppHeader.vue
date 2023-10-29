@@ -26,7 +26,7 @@
             </g>
           </svg>
           <span class="text-white font-semibold text-xs"
-            >(Demo with img, video & pdf)</span
+            >(Demo with img, video, pdf & srt)</span
           >
         </a>
       </div>
